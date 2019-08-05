@@ -28,12 +28,14 @@ impl Scope {
       Value::Int(li32) => match r {
         Value::Int(ri32) => self.stack.push(Value::Int(li32 + ri32)),
         Value::String(_s) => panic!("Cannot add types Int and String"),
-        Value::None => panic!("Cannot add types Int and None")
+        Value::Array(_a) => panic!("Cannot add types Int and Array"),
+        Value::None => panic!("Cannot add types Int and None"),
       },
       Value::String(lstr) => match r {
         Value::String(rstr) => self.stack.push(Value::String(format!("{}{}", lstr, rstr))),
         Value::Int(_i) => panic!("Cannot add types String and Int"),
-        Value::None => panic!("Cannot add types String and None")
+        Value::Array(_a) => panic!("Cannot add types String and Array"),
+        Value::None => panic!("Cannot add types String and None"),
       },
     }
   }
@@ -47,7 +49,8 @@ impl Scope {
       Value::Int(li32) => match r {
         Value::Int(ri32) => self.stack.push(Value::Int(li32 - ri32)),
         Value::String(_s) => panic!("Cannot sub types Int and String"),
-        Value::None => panic!("Cannot sub types Int and None")
+        Value::Array(_a) => panic!("Cannot sub types Int and Array"),
+        Value::None => panic!("Cannot sub types Int and None"),
       },
       Value::String(_s) => panic!("Cannot sub a String"),
     }
