@@ -6,6 +6,7 @@ use super::super::error::{
 use super::super::super::runtime::value::Value;
 
 pub fn range(scope: &mut Scope, v0: Value, v1: Value) -> Result<Value, TransformError> {
+  println!("rng {:?}", scope.peek());
   match scope.peek() {
     None => Err(Fail),
     Some(val) => match val.clone() {

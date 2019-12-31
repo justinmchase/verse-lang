@@ -27,9 +27,13 @@ use ast::{
 use runtime::value::Value;
 
 fn main() {
-    println!("Hello, world!");
+    // run with:
+    // cargo test -- --nocapture
+    let p = parse("
+        let test = `($x + $y + $z)
+        test({ x: 1, y: 2, z: 3 })
+    ");
 
-    let p = parse("fn test(x, y, z): ret x + y - z end");
     let m = Module {
         exports: vec![
             Exportable::Function(Box::new(Function {

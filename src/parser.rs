@@ -5,20 +5,21 @@ use unicode_segmentation::UnicodeSegmentation;
 
 use super::transformation::error::TransformError::{Fail,LR};
 use super::transformation::tokenizer::tokenizer;
-use super::transformation::transform::transform as trans;
+use super::transformation::transform::transform;
 use super::transformation::scope::Scope;
 use super::runtime::value::Value;
 
 pub fn parse<'a>(code: &'static str) {
   let graphemes = UnicodeSegmentation::graphemes(code, true)
     .collect::<Vec<&str>>();
+
   let input = graphemes
     .iter()
     .map(|c| Value::String(c.to_string()))
     .collect();
 
   let mut scope = Scope::new(input);
-  let res = trans(&mut scope, tokenizer());
+  let res = transform(&mut scope, tokenizer());
   
   match res {
     Ok(v) => {

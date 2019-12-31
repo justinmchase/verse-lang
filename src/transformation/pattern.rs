@@ -5,5 +5,6 @@ pub enum Pattern {
   Default,
   Value(Value),
   Range((Value, Value)),
-  Slice((Box<Pattern>, usize, Option<usize>))
+  Slice((Box<Pattern>, usize, Option<usize>)),
+  Or(Vec<Box<Pattern>>)
 }
