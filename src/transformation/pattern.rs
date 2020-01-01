@@ -4,7 +4,7 @@ use super::super::runtime::value::Value;
 pub enum Pattern {
   Default,
   Value(Value),
-  Range((Value, Value)),
-  Slice((Box<Pattern>, usize, Option<usize>)),
+  Range(Value, Value),
+  Quantity(Box<Pattern>, usize, Option<usize>),
   Or(Vec<Box<Pattern>>)
 }

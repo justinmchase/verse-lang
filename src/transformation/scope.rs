@@ -20,4 +20,8 @@ impl Scope {
   pub fn next(&mut self) {
     self.index = self.index + 1;
   }
+
+  pub fn pos(&mut self) -> usize {
+    self.index
+  }
 }

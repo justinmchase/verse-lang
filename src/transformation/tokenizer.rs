@@ -8,25 +8,25 @@ pub fn tokenizer() -> Pattern {
   let tab = Pattern::Value(Value::String("\t".to_string()));
   let space = Pattern::Value(Value::String(" ".to_string()));
 
-  let whitespace = Pattern::Slice((
+  let whitespace = Pattern::Quantity(
     Box::new(Pattern::Or(vec![
       Box::new(space),
       Box::new(tab),
     ])),
     1,
     None
-  ));
+  );
 
-  let word = Pattern::Slice((
-    Box::new(Pattern::Range((
+  let word = Pattern::Quantity(
+    Box::new(Pattern::Range(
       Value::String("a".to_string()),
       Value::String("z".to_string())
-    ))),
+    )),
     1,
     None
-  ));
+  );
 
-  Pattern::Slice((
+  Pattern::Quantity(
     Box::new(Pattern::Or(vec![
       Box::new(new_line),
       Box::new(whitespace),
@@ -35,5 +35,5 @@ pub fn tokenizer() -> Pattern {
     ])),
     0,
     None
-  ))
+  )
 }
