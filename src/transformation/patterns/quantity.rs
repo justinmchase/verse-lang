@@ -20,7 +20,7 @@ pub fn quantity(scope: &mut Scope, pattern: Pattern, min: usize, max: Option<usi
     let r = transform(scope, pattern.clone());
     match r {
       Ok(v) => results.push(v),
-      Err(e) => break
+      _ => break
     }
     
     // If we aren't progressing the match then also break
