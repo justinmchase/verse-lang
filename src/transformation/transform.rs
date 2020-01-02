@@ -5,6 +5,7 @@ use super::error::{
   TransformError
 };
 use super::patterns::{
+  default,
   or,
   quantity,
   range,
@@ -13,7 +14,7 @@ use super::patterns::{
 
 pub fn transform(scope: &mut Scope, pattern: Pattern) -> Result<Value, TransformError> {
   match pattern {
-    Pattern::Default => Ok(Value::None),
+    Pattern::Default => default(scope),
     Pattern::Value(v) => value(scope, v),
     Pattern::Range(v0, v1) => range(scope, v0, v1),
     Pattern::Quantity(p, min, max) => quantity(scope, *p, min, max),

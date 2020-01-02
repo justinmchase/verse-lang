@@ -17,3 +17,34 @@ pub fn or(scope: &mut Scope, patterns: Vec<Box<Pattern>>) -> Result<Value, Trans
   }
   Err(Fail)
 }
+
+#[test]
+fn eos() {
+  let mut scope = Scope::new(vec![]);
+  let res = or(&mut scope, vec![Box::new(Pattern::Value(Value::Int(0)))]);
+  assert_eq!(res, Err(Fail));
+}
+
+#[test]
+fn condition_fails() {
+  let mut scope = Scope::new(vec![Value::Int(1)]);
+  let res = or(&mut scope, vec![Box::new(Pattern::Value(Value::Int(0)))]);
+  assert_eq!(res, Err(Fail));
+}
+
+#[test]
+fn with_one_condition_success() {
+  let mut scope = Scope::new(vec![Value::Int(0)]);
+  let res = or(&mut scope, vec![Box::new(Pattern::Value(Value::Int(0)))]);
+  assert_eq!(res, Ok(Value::Int(0)));
+}
+
+#[test]
+fn with_multiple_conditions_success() {
+  let mut scope = Scope::new(vec![Value::Int(1)]);
+  let res = or(&mut scope, vec![
+    Box::new(Pattern::Value(Value::Int(0))),
+    Box::new(Pattern::Value(Value::Int(1)))
+  ]);
+  assert_eq!(res, Ok(Value::Int(1)));
+}

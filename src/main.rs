@@ -9,7 +9,7 @@ use parser::parse;
 use ast::{
   function::Function,
   expression::Expression::{
-    Int,
+    // Int,
 
     Arg,
     Ret,
