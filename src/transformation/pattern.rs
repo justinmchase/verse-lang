@@ -2,6 +2,7 @@ use super::super::runtime::value::Value;
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub enum Pattern {
+  Any,
   Default,
   Value(Value),
   Range(Value, Value),

@@ -26,12 +26,14 @@ pub fn tokenizer() -> Pattern {
     None
   );
 
+  let special = Pattern::Any;
+
   Pattern::Quantity(
     Box::new(Pattern::Or(vec![
       Box::new(new_line),
       Box::new(whitespace),
       Box::new(word),
-      // todo: special characters...
+      Box::new(special)
     ])),
     0,
     None
