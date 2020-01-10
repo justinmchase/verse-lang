@@ -7,8 +7,10 @@ mod verse;
 use verse::Verse;
 use parser::parse;
 use ast::{
-  function::Function,
-  expression::Expression::{
+  Exportable,
+  Module,
+  Function,
+  Expression::{
     // Int,
 
     Arg,
@@ -19,12 +21,13 @@ use ast::{
     Add,
     Sub,
   },
-  module::{
-    Exportable,
-    Module
+  Pattern::{
+    Tuple,
+    Var,
+    Any
   }
 };
-use runtime::value::Value;
+use runtime::{Value};
 
 fn main() {
   // run with:
@@ -38,11 +41,11 @@ fn main() {
     exports: vec![
       Exportable::Function(Box::new(Function {
         name: "test",
-        parameters: vec![
-          Set(("x".to_string(), Box::new(Arg(0)))),
-          Set(("y".to_string(), Box::new(Arg(1)))),
-          Set(("z".to_string(), Box::new(Arg(2))))
-        ],
+        pattern: Some(Tuple(vec![
+          Box::new(Var("x", Box::new(Any))),
+          Box::new(Var("y", Box::new(Any))),
+          Box::new(Var("z", Box::new(Any)))
+        ])),
         body: vec![
           Ret(Some(Box::new(
             Sub((
@@ -57,14 +60,14 @@ fn main() {
       }))
     ]
   };
-  let v = Verse::new(m);
-  let res = v.invoke("test", vec![
-    Value::Int(1),
-    Value::Int(2),
-    Value::Int(3)
-  ]);
+  // let v = Verse::new(m);
+  // let res = v.invoke("test", vec![
+  //   Value::Int(1),
+  //   Value::Int(2),
+  //   Value::Int(3)
+  // ]);
 
-  assert_eq!(res, Value::Int(0));
+  // assert_eq!(res, Value::Int(0));
 }
 
 #[test]

@@ -1,6 +1,6 @@
 use super::scope::Scope;
 use super::pattern::Pattern;
-use super::super::runtime::value::Value;
+use super::super::runtime::{Value};
 use super::error::{
   TransformError
 };

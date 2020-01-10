@@ -1,8 +1,4 @@
-use super::function::Function;
-
-pub enum Exportable {
-  Function(Box<Function>)
-}
+use super::exportable::Exportable;
 
 pub struct Module {
   pub exports: Vec<Exportable>

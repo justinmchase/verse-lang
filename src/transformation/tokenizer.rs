@@ -1,9 +1,25 @@
-use super::super::runtime::value::Value;
+use super::super::runtime::{Value};
 use super::pattern::Pattern;
 
 // pub const tokenize: Pattern = Pattern::Default;
 
 pub fn tokenizer() -> Pattern {
+  
+  // new_line = "\n" -> (#nl)
+  // tab = "\t"
+  // space = " " 
+  // white_space = (space | tab)+ -> (#ws)
+  // word = w:"a".."z"+ -> (#word, s)
+  // special = s:any -> (#special, s)
+  //
+  // token
+  //   = new_line
+  //   | white_space
+  //   | word
+  //   | special
+  //
+  // tokenizer = t:token* |> !(#ws, v)
+
   let new_line = Pattern::Value(Value::String("\n".to_string()));
   let tab = Pattern::Value(Value::String("\t".to_string()));
   let space = Pattern::Value(Value::String(" ".to_string()));

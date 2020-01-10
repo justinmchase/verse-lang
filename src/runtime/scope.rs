@@ -1,6 +1,14 @@
 use std::collections::HashMap;
 use super::value::Value;
-use super::super::ast::expression::Expression;
+use super::super::ast::{
+  Expression,
+  Pattern,
+  Pattern::{
+    Any,
+    Tuple,
+    Var
+  }
+};
 
 pub struct Scope {
   pub args: Vec<Value>,
@@ -54,6 +62,15 @@ impl Scope {
       },
       Value::String(_s) => panic!("Cannot sub a String"),
     }
+  }
+
+  pub fn r#match(&mut self, pattern: &Pattern) { // -> Result<Value, TransformError> {
+    // match pattern {
+    //   Any => any(self),
+    //   Tuple => tuple(self),
+    //   Var => var(self)
+    // }
+    ()
   }
 
   pub fn exec(&mut self, expr: &Expression) {

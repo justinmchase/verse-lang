@@ -3,7 +3,7 @@ use super::super::error::{
   TransformError,
   TransformError::{Fail}
 };
-use super::super::super::runtime::value::Value;
+use super::super::super::runtime::{Value};
 
 pub fn value(scope: &mut Scope, v: Value) -> Result<Value, TransformError> {
   match scope.peek() {

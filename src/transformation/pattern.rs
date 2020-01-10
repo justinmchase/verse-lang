@@ -1,4 +1,4 @@
-use super::super::runtime::value::Value;
+use super::super::runtime::{Value};
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub enum Pattern {

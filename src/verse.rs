@@ -1,7 +1,9 @@
-use super::ast::module::{Exportable, Module};
-use super::ast::function::Function;
-use super::runtime::value::Value;
-use super::runtime::scope::Scope;
+use super::ast::{
+  Exportable,
+  Module,
+  Function
+};
+use super::runtime::{Value, Scope};
 
 pub struct Verse {
   pub root: Box<Module>
@@ -18,9 +20,13 @@ impl Verse {
     println!("invokefn: {}", f.name);
 
     let mut scope = Scope::new(arguments);
-    for p in f.parameters.iter() {
-      scope.exec(p)
+
+    // scope.match(f.pattern);
+    match &f.pattern {
+      Some(p) => scope.r#match(p),
+      None => ()
     }
+
     for e in f.body.iter() {
       scope.exec(e);
     }

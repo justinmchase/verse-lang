@@ -3,7 +3,7 @@ use super::super::error::{
   TransformError,
   TransformError::{Fail}
 };
-use super::super::super::runtime::value::Value;
+use super::super::super::runtime::{Value};
 use super::super::transform::transform;
 use super::super::pattern::Pattern;
 

@@ -1,4 +1,4 @@
-use super::super::runtime::value::Value;
+use super::super::runtime::{Value};
 
 pub struct Scope {
   index: usize,
