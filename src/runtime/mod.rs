@@ -1,13 +1,13 @@
+pub use ops::exec;
+pub use patterns::transform;
+pub use error::RuntimeError;
 pub use scope::Scope;
-pub use value::{
-  Value,
-  value_cmp,
-  value_eq,
-  value_gt,
-  value_lt,
-  value_ge,
-  value_le
-};
+pub use value::Value;
+pub use verse::Verse;
 
+mod ops;
+mod patterns;
+mod error;
 mod scope;
 mod value;
+mod verse;

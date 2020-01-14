@@ -1,11 +1,13 @@
 use super::expression::Expression;
-use super::super::runtime::{ Value };
+// use super::super::runtime::{ Value };
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub enum Pattern {
+  And(Vec<Box<Pattern>>),
   Any,
+  Array(Box<Pattern>),
+  Project(Box<Pattern>, Box<Expression>),
   Var(&'static str, Box<Pattern>),
-  Tuple(Vec<Box<Pattern>>)
   // Default,
   // Value(Value),
   // Range(Value, Value),
