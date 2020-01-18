@@ -1,5 +1,5 @@
-use super::exportable::Exportable;
+use super::function::Function;
 
 pub struct Module {
-  pub exports: Vec<Exportable>
+  pub exports: Vec<Function>
 }

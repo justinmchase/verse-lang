@@ -1,5 +1,4 @@
 use super::super::ast::{
-  Exportable,
   Module,
   Function
 };
@@ -24,7 +23,7 @@ impl Verse {
     }
   }
 
-  fn invokefn(&self, f: &Box<Function>, arg: Value) -> Result<Value, RuntimeError> {
+  fn invokefn(&self, f: &Function, arg: Value) -> Result<Value, RuntimeError> {
     println!("invokefn: {}", f.name);
     let mut scope = Scope::new(vec![arg]);
     transform(&mut scope, &f.body)
@@ -34,13 +33,10 @@ impl Verse {
     println!("invoke: {}", name);
     let exported = self.root.exports
       .iter()
-      .find(|&ex| match ex {
-        Exportable::Function(f) if f.name == name => true,
-        _ => false
-      });
+      .find(|&ex| ex.name == name);
 
     match exported {
-      Some(Exportable::Function(f)) => self.invokefn(f, arg),
+      Some(f) => self.invokefn(f, arg),
       None => Err(InvalidReferenceError)
     }
   }

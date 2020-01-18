@@ -2,7 +2,6 @@ mod ast;
 mod runtime;
 
 use ast::{
-  Exportable,
   Module,
   Function,
   Expression::{
@@ -29,30 +28,30 @@ fn main() {
 
   // Below ast is equivalent to this code:
   //
-  // test = [x, y, z] -> (x + y) - z
+  // add = [x, y] -> (x + y)
+  // sub = [x, y] -> (x - y)
+  // z = sub(add(1, 2), 3)
   // 
 
   let m = Module {
     exports: vec![
-      Exportable::Function(Box::new(Function {
-        name: "test",
-        body: Project(
-          Box::new(Array(
-            Box::new(And(vec![
-              Box::new(Var("x", Box::new(Any))),
-              Box::new(Var("y", Box::new(Any))),
-              Box::new(Var("z", Box::new(Any))),
-            ]))
+      Function::new(
+        "test",
+        Array(
+          Box::new(And(vec![
+            Box::new(Var("x", Box::new(Any))),
+            Box::new(Var("y", Box::new(Any))),
+            Box::new(Var("z", Box::new(Any))),
+          ])),
+        ),
+        Sub(
+          Box::new(Add(
+            Box::new(Ref("x")),
+            Box::new(Ref("y")),
           )),
-          Box::new(Sub(
-            Box::new(Add(
-              Box::new(Ref("x".to_string())),
-              Box::new(Ref("y".to_string())),
-            )),
-            Box::new(Ref("z".to_string()))
-          ))
+          Box::new(Ref("z"))
         )
-      }))
+      )
     ]
   };
   let v = Verse::new(m);

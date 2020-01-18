@@ -7,10 +7,9 @@ pub enum Expression {
   // Tuple(vec![])
 
   // Unary expressions
-  Ref(String),
+  Ref(&'static str),
 
   // Binary expressions
-  // Set(String, Box<Expression>),
-  Add(Box<Expression>,Box<Expression>),
-  Sub(Box<Expression>,Box<Expression>),
+  Add(Box<Expression>, Box<Expression>),
+  Sub(Box<Expression>, Box<Expression>),
 }
