@@ -9,7 +9,7 @@ use super::transformation::transform::transform;
 use super::transformation::scope::Scope;
 use super::runtime::{Value};
 
-pub fn parse<'a>(code: &'static str) {
+pub fn parse(code: &'static str) {
   let graphemes = UnicodeSegmentation::graphemes(code, true)
     .collect::<Vec<&str>>();
 

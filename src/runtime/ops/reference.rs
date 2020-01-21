@@ -7,11 +7,11 @@ use super::super::{
   }
 };
 
-pub fn reference(scope: &mut Scope, name: String) -> Result<Value, RuntimeError> {
-  let val = scope.vars.get(&name);
+pub fn reference(scope: &mut Scope, name: &str) -> Result<Value, RuntimeError> {
+  let val = scope.vars.get(name);
   println!("   - {:?}", val);
   match val {
     Some(v) => Ok(v.clone()),
-    None => Err(InvalidReferenceError),
+    None => Err(InvalidReferenceError(name.to_string())),
   }
 }

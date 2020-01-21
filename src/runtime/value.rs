@@ -1,12 +1,19 @@
+use super::super::ast::{
+  Expression,
+  Pattern,
+};
+
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub enum Value {
   None,
   Int(i32),
   String(String),
-  Array(Vec<Value>)
+  Array(Vec<Value>),
+  Function(Box<Pattern>, Box<Expression>)
 }
 
 pub fn value_cmp(left: &Value, right: &Value) -> Option<i8> {
+  if (left == right) { return Some(0); }
   match left {
     Value::None => match right {
       Value::None => Some(0),
@@ -36,7 +43,15 @@ pub fn value_cmp(left: &Value, right: &Value) -> Option<i8> {
         return None
       },
       _ => None
-    }
+    },
+    // Value::Function(l) => match right {
+    //   Value::Function(r) => {
+    //     if l == r { return Some(0) }
+    //     return None
+    //   },
+    //   _ => None
+    // },
+    _ => None
   }
 }
 

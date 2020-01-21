@@ -12,7 +12,7 @@ use super::super::{
 
 pub fn project(scope: &mut Scope, pattern: &Pattern, expression: &Expression) -> Result<Value, RuntimeError> {
   match transform(scope, pattern) {
-    Ok(v) => exec(scope, expression),
+    Ok(_) => exec(scope, expression),
     Err(e) => Err(e)
   }
 }

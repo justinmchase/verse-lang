@@ -15,7 +15,7 @@ pub fn array(scope: &mut Scope, pattern: &Pattern) -> Result<Value, RuntimeError
   match scope.peek() {
     Some(v) => match v {
       Value::Array(items) => {
-        let mut s = Scope::from(items.to_vec(), scope);
+        let mut s = Scope::new(items.to_vec(), scope.vars.clone());
         let res = transform(&mut s, pattern);
         if res.is_ok() {
           scope.next();

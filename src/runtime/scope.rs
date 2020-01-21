@@ -7,26 +7,17 @@ use super::{
 pub struct Scope {
   index: usize,
   input: Vec<Value>,
-  pub vars: HashMap<String, Value>,
+  pub vars: HashMap<String, Value>
 }
 
 impl Scope {
 
   // New top level scope, no vars
-  pub fn new(input: Vec<Value>) -> Self {
+  pub fn new(input: Vec<Value>, vars: HashMap<String, Value>) -> Self {
     Scope {
       index: 0,
       input,
-      vars: HashMap::new(),
-    }
-  }
-  
-  // Switching input but in the same variable scope
-  pub fn from(input: Vec<Value>, scope: &mut Scope) -> Self {
-    Scope {
-      index: 0,
-      input,
-      vars: scope.vars.clone()
+      vars,
     }
   }
   

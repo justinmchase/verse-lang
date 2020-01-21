@@ -8,7 +8,8 @@ use super::super::{
 };
 
 pub fn any(scope: &mut Scope) -> Result<Value, RuntimeError> {
-  match scope.next() {
+  let next = scope.next();
+  match next {
     Some(v) => Ok(v.clone()),
     None => Err(TransformError)
   }
