@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::rc::Rc;
 use super::super::{
   Scope,
   Value,
@@ -9,8 +9,8 @@ use super::super::{
   transform,
   RuntimeError,
   RuntimeError::{
-    InvalidValueError,
-    NotCallableError
+    NotCallableError,
+    PatternNotMatchedError
   }
 };
 use super::super::super::ast::{
@@ -18,26 +18,32 @@ use super::super::super::ast::{
   Pattern::{Project}
 };
 
-pub fn call(scope: &mut Scope, func: &Expression, args: &Vec<Box<Expression>>) -> Result<Value, RuntimeError> {
-  
-  match exec(scope, &func) {
+pub fn call(start: Scope, func: &Expression, args: &Vec<Box<Expression>>) -> Result<Value, RuntimeError> {
+  match exec(start.clone(), &func) {
     Ok(value) => {
       match value {
         Function(p, e) => {
           let mut arguments = vec![];
           for a in args.iter() {
-            match exec(scope, &a) {
+            match exec(start.clone(), &a) {
               Ok(v) => arguments.push(v),
-              Err(e) => return Err(e)
+              Err(e) => { return Err(e) }
             }
           }
-          let mut vars = HashMap::new();
-          let mut scope = Scope::new(arguments, vars);
-          transform(&mut scope, &Project(p, e))
+          let scope = Scope::new(Rc::new(arguments));
+          match transform(scope, &Project(p, e)) {
+            Ok(m) => {
+              if m.matched {
+                Ok(m.value)
+              } else {
+                Err(PatternNotMatchedError)
+              }
+            },
+            Err(e) => Err(e)
+          }
         },
         _ => Err(NotCallableError(value)) // cannot call a non-function
       }
-
     },
     Err(e) => Err(e)
   }

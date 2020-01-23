@@ -1,8 +1,9 @@
-use std::collections::HashMap;
+use std::rc::Rc;
 use super::super::ast::{
   Module,
-  Pattern,
-  Pattern::{Project}
+  Pattern::{
+    Project
+  }
 };
 use super::{
   Value,
@@ -12,8 +13,8 @@ use super::{
   Scope,
   RuntimeError,
   RuntimeError::{
-    InvalidReferenceError,
-    NotCallableError
+    NotCallableError,
+    PatternNotMatchedError,
   },
   transform
 };
@@ -34,12 +35,18 @@ impl Verse {
     match ex {
       Ok(v) => match v {
         Function(pat, exp) => {
-          let vars = HashMap::new();
-          let mut scope = Scope::new(vec![arg], vars);
-          transform(&mut scope, &Project(
-            pat,
-            exp
-          ))
+          let args = Rc::new(vec![arg]);
+          let scope = Scope::new(args);
+          match transform(scope, &Project(pat, exp)) {
+            Ok(m) => {
+              if m.matched {
+                Ok(m.value)
+              } else {
+                Err(PatternNotMatchedError)
+              }
+            },
+            Err(e) => Err(e)
+          }
         },
         _ => Err(NotCallableError(v))
       },

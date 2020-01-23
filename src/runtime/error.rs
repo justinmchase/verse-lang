@@ -6,5 +6,6 @@ pub enum RuntimeError {
   NotImplementedError,
   InvalidReferenceError(String),
   InvalidValueError,
-  NotCallableError(Value)
+  NotCallableError(Value),
+  PatternNotMatchedError
 }

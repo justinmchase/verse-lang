@@ -29,7 +29,7 @@ use super::super::super::{
   }
 };
 
-pub fn exec(scope: &mut Scope, expr: &Expression) -> Result<Value, RuntimeError> {
+pub fn exec(scope: Scope, expr: &Expression) -> Result<Value, RuntimeError> {
   println!(" op: {:?}", expr);
   match expr {
     Add(l, r) => add(scope, l, r),

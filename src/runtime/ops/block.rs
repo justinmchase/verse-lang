@@ -6,17 +6,14 @@ use super::super::{
   },
   exec,
   RuntimeError,
-  RuntimeError::{
-    InvalidValueError
-  }
 };
 use super::super::super::ast::Expression;
 
-pub fn block(scope: &mut Scope, expressions: &Vec<Box<Expression>>) -> Result<Value, RuntimeError> {
+pub fn block(scope: Scope, expressions: &Vec<Box<Expression>>) -> Result<Value, RuntimeError> {
   // todo: should handle the return case..
   let mut last = None;
   for expression in expressions.iter() {
-    match exec(scope, &expression) {
+    match exec(scope.clone(), &expression) {
       Err(e) => return Err(e),
       Ok(v) => { last = v; }
     }

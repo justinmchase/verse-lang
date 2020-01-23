@@ -1,15 +1,12 @@
+use std::rc::Rc;
 use super::super::{
   Scope,
   Value,
-  Value::{
-    Function
-  },
   exec,
   transform,
   RuntimeError,
   RuntimeError::{
-    InvalidValueError,
-    NotCallableError
+    PatternNotMatchedError
   }
 };
 use super::super::super::ast::{
@@ -17,11 +14,21 @@ use super::super::super::ast::{
   Pattern,
 };
 
-pub fn destructure(scope: &mut Scope, pattern: &Pattern, expression: &Expression) -> Result<Value, RuntimeError> {
-  match exec(scope, &expression) {
+pub fn destructure(start: Scope, pattern: &Pattern, expression: &Expression) -> Result<Value, RuntimeError> {
+  match exec(start.clone(), &expression) {
     Ok(value) => {
-      let mut scope = Scope::new(vec![value], scope.vars.clone());
-      transform(&mut scope, pattern)
+      let args = Rc::new(vec![value]);
+      let scope = Scope::new(args).with(start.vars);
+      match transform(scope, pattern) {
+        Ok(m) => {
+          if m.matched {
+            Ok(m.value)
+          } else {
+            Err(PatternNotMatchedError)
+          }
+        },
+        Err(e) => Err(e)
+      }
     },
     Err(e) => Err(e)
   }

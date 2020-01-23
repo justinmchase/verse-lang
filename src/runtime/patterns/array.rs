@@ -1,9 +1,11 @@
+use std::rc::Rc;
 use super::super::super::ast::{
   Pattern
 };
 use super::super::{
   Value,
   Scope,
+  Match,
   transform,
   RuntimeError,
   RuntimeError::{
@@ -11,20 +13,13 @@ use super::super::{
   }
 };
 
-pub fn array(scope: &mut Scope, pattern: &Pattern) -> Result<Value, RuntimeError> {
-  match scope.peek() {
-    Some(v) => match v {
+pub fn array(start: Scope, pattern: &Pattern) -> Result<Match, RuntimeError> {
+  match start.next() {
+    Some(next) => match next.value {
       Value::Array(items) => {
-        let mut s = Scope::new(items.to_vec(), scope.vars.clone());
-        let res = transform(&mut s, pattern);
-        if res.is_ok() {
-          scope.next();
-          for (k, v) in s.vars.iter() {
-            scope.vars.insert(k.to_string(), v.clone());
-          }
-        }
-        println!("  s: {:?}", scope.vars);
-        return res;
+        let args = Rc::new(items.to_vec());
+        let s = Scope::new(args).with(next.vars);
+        transform(s, pattern)
       },
       _ => Err(TransformError) // todo: implement tuple
     }

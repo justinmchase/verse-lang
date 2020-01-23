@@ -1,26 +1,50 @@
+use std::rc::Rc;
+use std::collections::HashMap;
 use super::super::super::ast::{
   Pattern
 };
 use super::super::{
-  Value,
   Scope,
+  Match,
+  Value,
   transform,
   RuntimeError
 };
 
-pub fn and(scope: &mut Scope, patterns: &Vec<Box<Pattern>>) -> Result<Value, RuntimeError> {
-  let i = scope.pos();
+pub fn and(start: Scope, patterns: &Vec<Box<Pattern>>) -> Result<Match, RuntimeError> {
+  let mut end = Match::fail(start.clone());
   let mut results = vec![];
   for p in patterns.iter() {
-    match transform(scope, p) {
-      Ok(v) => {
-        results.push(v);
+    match transform(start.clone(), p) {
+      Ok(m) => {
+        if !m.matched {
+          return Ok(m);
+        } else {
+          let value = m.value.clone();
+          results.push(value);
+          end = m;
+        }
       },
-      Err(e) => {
-        scope.mov(i);
-        return Err(e);
-      }
+      Err(e) => return Err(e)
     }
   }
-  Ok(Value::Array(results))
+  Ok(Match::ok(Value::Array(results), start, end.end))
+}
+
+#[test]
+fn and_matches_one() {
+  let s = Scope::new(Rc::new(vec![Value::None]));
+  let p = vec![Box::new(Pattern::Any)];
+  let m = and(s, &p);
+
+  assert_eq!(m.unwrap().value, Value::Array(vec![Value::None]));
+}
+
+#[test]
+fn and_matches_two() {
+  let s = Scope::new(Rc::new(vec![Value::None, Value::None]));
+  let p = vec![Box::new(Pattern::Any), Box::new(Pattern::Any)];
+  let m = and(s, &p);
+
+  assert_eq!(m.unwrap().value, Value::Array(vec![Value::None, Value::None]));
 }

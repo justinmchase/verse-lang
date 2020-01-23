@@ -9,8 +9,8 @@ use super::super::{
 };
 use super::super::super::ast::Expression;
 
-pub fn add(scope: &mut Scope, left: &Expression, right: &Expression) -> Result<Value, RuntimeError> {
-  let r0 = exec(scope, &left);
+pub fn add(scope: Scope, left: &Expression, right: &Expression) -> Result<Value, RuntimeError> {
+  let r0 = exec(scope.clone(), &left);
   if r0.is_err() { return r0; }
   
   let r1 = exec(scope, &right);

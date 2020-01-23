@@ -2,17 +2,20 @@ use super::super::super::ast::{
   Pattern
 };
 use super::super::{
-  Value,
   Scope,
+  Match,
   transform,
   RuntimeError
 };
 
-pub fn var(scope: &mut Scope, name: String, pattern: &Pattern) -> Result<Value, RuntimeError> {
-  match transform(scope, pattern) {
-    Ok(v) => {
-      scope.vars.insert(name, v.clone());
-      Ok(v)
+pub fn var(start: Scope, name: String, pattern: &Pattern) -> Result<Match, RuntimeError> {
+  match transform(start.clone(), pattern) {
+    Ok(m) => {
+      if m.matched {
+        Ok(Match::ok(m.value.clone(), start, m.end.add_var(name, m.value)))
+      } else {
+        Ok(m)
+      }
     },
     Err(e) => Err(e)
   }

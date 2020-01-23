@@ -2,8 +2,8 @@ use super::super::super::ast::{
   Pattern
 };
 use super::super::{
-  Value,
   Scope,
+  Match,
   RuntimeError,
 };
 use super::{
@@ -14,7 +14,7 @@ use super::{
   var,
 };
 
-pub fn transform(scope: &mut Scope, pattern: &Pattern) -> Result<Value, RuntimeError> {
+pub fn transform(scope: Scope, pattern: &Pattern) -> Result<Match, RuntimeError> {
   match pattern {
     Pattern::And(p) => and(scope, p),
     Pattern::Any => any(scope),

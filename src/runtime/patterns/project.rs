@@ -3,16 +3,22 @@ use super::super::super::ast::{
   Pattern,
 };
 use super::super::{
-  Value,
   Scope,
+  Match,
   RuntimeError,
+  RuntimeError::{
+    InvalidValueError
+  },
   transform,
   exec,
 };
 
-pub fn project(scope: &mut Scope, pattern: &Pattern, expression: &Expression) -> Result<Value, RuntimeError> {
-  match transform(scope, pattern) {
-    Ok(_) => exec(scope, expression),
+pub fn project(start: Scope, pattern: &Pattern, expression: &Expression) -> Result<Match, RuntimeError> {
+  match transform(start.clone(), pattern) {
+    Ok(m) => match exec(m.end.clone(), expression) {
+      Ok(v) => Ok(Match::ok(v, start, m.end)),
+      Err(e) => Err(e)
+    },
     Err(e) => Err(e)
   }
 }

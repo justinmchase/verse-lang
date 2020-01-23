@@ -18,7 +18,6 @@ use ast::{
     And,
     Any,
     Array,
-    Project,
     Var,
   }
 };
@@ -103,7 +102,7 @@ fn main() {
   assert_eq!(res, Ok(Value::Int(0)));
 }
 
-#[test]
-fn end_to_end() {
-  main()
-}
+// #[test]
+// fn end_to_end() {
+//   main()
+// }

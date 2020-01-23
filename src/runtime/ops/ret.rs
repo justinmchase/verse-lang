@@ -3,13 +3,10 @@ use super::super::{
   Value,
   exec,
   RuntimeError,
-  RuntimeError::{
-    InvalidValueError
-  }
 };
 use super::super::super::ast::Expression;
 
-pub fn ret(scope: &mut Scope, exp: &Expression) -> Result<Value, RuntimeError> {
+pub fn ret(scope: Scope, exp: &Expression) -> Result<Value, RuntimeError> {
 
   // todo: should unwind the current scope
   exec(scope, exp)

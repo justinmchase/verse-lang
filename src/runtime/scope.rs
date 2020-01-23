@@ -1,58 +1,68 @@
+use std::rc::Rc;
+use std::cell::RefCell;
 use std::collections::HashMap;
 use super::{
   Value
 };
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Scope {
-  index: usize,
-  input: Vec<Value>,
-  pub vars: HashMap<String, Value>
+  pub input: Rc<Vec<Value>>,
+  pub index: Option<usize>,
+  pub value: Value,
+  pub vars: Rc<RefCell<HashMap<String, Value>>>
 }
 
 impl Scope {
 
   // New top level scope, no vars
-  pub fn new(input: Vec<Value>, vars: HashMap<String, Value>) -> Self {
+  pub fn new(input: Rc<Vec<Value>>) -> Self {
     Scope {
-      index: 0,
+      index: None,
+      value: Value::None,
       input,
-      vars,
+      vars: Rc::new(RefCell::new(HashMap::new())),
     }
   }
-  
-  pub fn peek(&mut self) -> Option<&Value> {
-    self.input.get(self.index)
-  }
 
-  pub fn next(&mut self) -> Option<&Value> {
-    match self.input.get(self.index) {
-      Some(v) => {
-        self.index = self.index + 1;
-        Some(v)
+  pub fn next(&self) -> Option<Scope> {
+    let index = self.next_pos();
+    match self.input.get(index) {
+      Some(value) => {
+        Some(Scope {
+          index: Some(index),
+          value: value.clone(),
+          input: self.input.clone(),
+          vars: self.vars.clone(),
+        })
       },
       None => None
     }
   }
 
-  pub fn pos(&mut self) -> usize {
-    self.index
+  fn next_pos(&self) -> usize {
+    match self.index {
+      Some(i) => i + 1,
+      None => 0
+    }
   }
 
-  pub fn mov(&mut self, index: usize) {
-    self.index = index;
+  pub fn add_var(&self, name: String, value: Value) -> Scope {
+    (*self.vars).borrow_mut().insert(name, value);
+    Scope {
+      index: self.index,
+      value: self.value.clone(),
+      input: self.input.clone(),
+      vars: self.vars.clone()
+    }
   }
 
-  
-
-  // pub fn get(&mut self, name: String) -> Option<&Value> {
-  //   self.vars.get(&name)
-  // }
-
-  // pub fn set(&mut self, name: String, value: Value) {
-    
-  //   println!("set: {:?} = {:?}", name, value.clone());
-  //   self.vars.insert(name, value);
-  //   println!("vars: {:?}", self.vars.clone());
-  // }
+  pub fn with(&self, vars: Rc<RefCell<HashMap<String, Value>>>) -> Scope {
+    Scope {
+      index: self.index,
+      value: self.value.clone(),
+      input: self.input.clone(),
+      vars
+    }
+  }
 }

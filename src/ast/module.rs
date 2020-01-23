@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::rc::Rc;
 use super::{
   Expression
 };
@@ -22,8 +22,7 @@ impl Module {
   }
 
   pub fn export(&mut self) -> Result<Value, RuntimeError> {
-    let vars = HashMap::new();
-    let mut scope = Scope::new(vec![], vars);
-    exec(&mut scope, &self.body)
+    let scope = Scope::new(Rc::new(vec![]));
+    exec(scope, &self.body)
   }
 }

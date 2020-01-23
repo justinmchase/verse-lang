@@ -9,11 +9,11 @@ use super::super::{
   }
 };
 
-pub fn subtract(scope: &mut Scope, left: &Expression, right: &Expression) -> Result<Value, RuntimeError> {
-  let r0 = exec(scope, left);
+pub fn subtract(scope: Scope, left: &Expression, right: &Expression) -> Result<Value, RuntimeError> {
+  let r0 = exec(scope.clone(), left);
   if r0.is_err() { return r0; }
   
-  let r1 = exec(scope, right);
+  let r1 = exec(scope.clone(), right);
   if r1.is_err() { return r1; }
 
   let l = r0.ok().unwrap();
