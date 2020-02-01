@@ -1,3 +1,4 @@
+use std::rc::Rc;
 use super::super::super::ast::{
   Expression,
   Pattern,
@@ -5,10 +6,8 @@ use super::super::super::ast::{
 use super::super::{
   Scope,
   Match,
+  Value,
   RuntimeError,
-  RuntimeError::{
-    InvalidValueError
-  },
   transform,
   exec,
 };
@@ -21,4 +20,24 @@ pub fn project(start: Scope, pattern: &Pattern, expression: &Expression) -> Resu
     },
     Err(e) => Err(e)
   }
+}
+
+#[test]
+fn project_success() {
+  let p = Pattern::Any;
+  let e = Expression::Literal(Value::Int(7));
+  let s = Scope::new(Rc::new(vec![Value::Int(11)]));
+
+  let r = project(s, &p, &e);
+  assert_eq!(r.unwrap().value, Value::Int(7));
+}
+
+#[test]
+fn project_expr_can_access_vars() {
+  let p = Pattern::Var("x", Box::new(Pattern::Any));
+  let e = Expression::Ref("x");
+  let s = Scope::new(Rc::new(vec![Value::Int(7)]));
+
+  let r = project(s, &p, &e);
+  assert_eq!(r.unwrap().value, Value::Int(7));
 }
