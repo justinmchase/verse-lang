@@ -19,6 +19,6 @@ fn default_matches_as_none_always() {
   let s = Scope::new(Rc::new(vec![Value::Int(1)]));
   let m = default(s);
 
-  assert_eq!(m.unwrap().value, Value::None);
-  assert_eq!(m.matched, true);
+  assert_eq!(m.clone().unwrap().value, Value::None);
+  assert_eq!(m.unwrap().matched, true);
 }

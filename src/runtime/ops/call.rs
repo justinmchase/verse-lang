@@ -15,7 +15,7 @@ use super::super::{
 };
 use super::super::super::ast::{
   Expression,
-  Pattern::{Project}
+  Pattern,
 };
 
 pub fn call(start: Scope, func: &Expression, args: &Vec<Box<Expression>>) -> Result<Value, RuntimeError> {
@@ -25,13 +25,14 @@ pub fn call(start: Scope, func: &Expression, args: &Vec<Box<Expression>>) -> Res
         Function(p, e) => {
           let mut arguments = vec![];
           for a in args.iter() {
+            println!("arg: {:?}", &a.clone());
             match exec(start.clone(), &a) {
               Ok(v) => arguments.push(v),
               Err(e) => { return Err(e) }
             }
           }
-          let scope = Scope::new(Rc::new(arguments));
-          match transform(scope, &Project(p, e)) {
+          let scope = Scope::new(Rc::new(arguments)).with(start.vars);
+          match transform(scope, &Pattern::Project(p, e)) {
             Ok(m) => {
               if m.matched {
                 Ok(m.value)
@@ -47,4 +48,43 @@ pub fn call(start: Scope, func: &Expression, args: &Vec<Box<Expression>>) -> Res
     },
     Err(e) => Err(e)
   }
+}
+
+#[test]
+fn call_cannot_call_non_function() {
+  let s = Scope::new(Rc::new(vec![]));
+  let f = Expression::Literal(Value::None);
+  let a = vec![];
+  let r = call(s, &f, &a);
+  assert_eq!(r, Err(NotCallableError(Value::None)));
+}
+
+#[test]
+fn call_can_call_function() {
+  let s = Scope::new(Rc::new(vec![]));
+  let f = Expression::Literal(Value::Function(
+    Box::new(Pattern::Default),
+    Box::new(Expression::Literal(Value::Int(1)))
+  ));
+  let a = vec![];
+  let r = call(s, &f, &a);
+  assert_eq!(r, Ok(Value::Int(1)));
+}
+
+#[test]
+fn call_expr_can_ref_vars() {
+  let s = Scope::new(Rc::new(vec![]));
+  s.add_var("x".to_string(), Value::Int(11));
+
+  let f = Expression::Literal(Value::Function(
+    Box::new(Pattern::Var("y", Box::new(Pattern::Any))),
+    Box::new(Expression::Add(
+      Box::new(Expression::Ref("x")),
+      Box::new(Expression::Ref("y")),
+    )
+  )));
+
+  let a = vec![Box::new(Expression::Literal(Value::Int(7)))];
+  let r = call(s, &f, &a);
+  assert_eq!(r, Ok(Value::Int(18)));
 }

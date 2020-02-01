@@ -8,7 +8,7 @@ pub enum Pattern {
   Array(Option<Box<Pattern>>),
   Project(Box<Pattern>, Box<Expression>),
   Var(&'static str, Box<Pattern>),
-  // Default,
+  Default,
   // Value(Value),
   // Range(Value, Value),
   // Quantity(Box<Pattern>, usize, Option<usize>),
