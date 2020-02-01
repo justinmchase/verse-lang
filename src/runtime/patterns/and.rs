@@ -12,39 +12,48 @@ use super::super::{
 };
 
 pub fn and(start: Scope, patterns: &Vec<Box<Pattern>>) -> Result<Match, RuntimeError> {
-  let mut end = Match::fail(start.clone());
+  let mut _match = Match::fail(start.clone());
   let mut results = vec![];
   for p in patterns.iter() {
-    match transform(start.clone(), p) {
+    match transform(_match.end.clone(), p) {
       Ok(m) => {
         if !m.matched {
           return Ok(m);
         } else {
           let value = m.value.clone();
           results.push(value);
-          end = m;
+          _match = m;
         }
       },
       Err(e) => return Err(e)
     }
   }
-  Ok(Match::ok(Value::Array(results), start, end.end))
+  Ok(Match::ok(Value::Array(results), start, _match.end))
 }
 
 #[test]
 fn and_matches_one() {
-  let s = Scope::new(Rc::new(vec![Value::None]));
+  let s = Scope::new(Rc::new(vec![Value::Int(0)]));
   let p = vec![Box::new(Pattern::Any)];
   let m = and(s, &p);
 
-  assert_eq!(m.unwrap().value, Value::Array(vec![Value::None]));
+  assert_eq!(m.unwrap().value, Value::Array(vec![Value::Int(0)]));
 }
 
 #[test]
 fn and_matches_two() {
-  let s = Scope::new(Rc::new(vec![Value::None, Value::None]));
+  let s = Scope::new(Rc::new(vec![Value::Int(0), Value::Int(1)]));
   let p = vec![Box::new(Pattern::Any), Box::new(Pattern::Any)];
   let m = and(s, &p);
 
-  assert_eq!(m.unwrap().value, Value::Array(vec![Value::None, Value::None]));
+  assert_eq!(m.unwrap().value, Value::Array(vec![Value::Int(0), Value::Int(1)]));
+}
+
+#[test]
+fn and_fails_if_not_enough_input() {
+  let s = Scope::new(Rc::new(vec![Value::Int(0)]));
+  let p = vec![Box::new(Pattern::Any), Box::new(Pattern::Any)];
+  let m = and(s, &p);
+
+  assert_eq!(m.unwrap().matched, false); 
 }
