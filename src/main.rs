@@ -42,11 +42,11 @@ fn main() {
     Box::new(Destructure(
       Box::new(Var("add", Box::new(Any))),
       Box::new(Literal(Function(
-        Box::new(Array(
+        Box::new(Array(Some(
           Box::new(And(vec![
             Box::new(Var("x", Box::new(Any))),
             Box::new(Var("y", Box::new(Any))),
-          ]))
+          ])))
         )),
         Box::new(Add(
           Box::new(Ref("x")),
@@ -57,11 +57,11 @@ fn main() {
     Box::new(Destructure(
       Box::new(Var("sub", Box::new(Any))),
       Box::new(Literal(Function(
-        Box::new(Array(
+        Box::new(Array(Some(
           Box::new(And(vec![
             Box::new(Var("x", Box::new(Any))),
             Box::new(Var("y", Box::new(Any))),
-          ]))
+          ])))
         )),
         Box::new(Sub(
           Box::new(Ref("x")),
@@ -70,12 +70,12 @@ fn main() {
       )))
     )),
     Box::new(Return(Box::new(Literal(Function(
-      Box::new(Array(
+      Box::new(Array(Some(
         Box::new(And(vec![
           Box::new(Var("x", Box::new(Any))),
           Box::new(Var("y", Box::new(Any))),
           Box::new(Var("z", Box::new(Any))),
-        ])),
+        ]))),
       )),
       Box::new(Call(
         Box::new(Ref("sub")),

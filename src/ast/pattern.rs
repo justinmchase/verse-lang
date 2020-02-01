@@ -5,7 +5,7 @@ use super::expression::Expression;
 pub enum Pattern {
   And(Vec<Box<Pattern>>),
   Any,
-  Array(Box<Pattern>),
+  Array(Option<Box<Pattern>>),
   Project(Box<Pattern>, Box<Expression>),
   Var(&'static str, Box<Pattern>),
   // Default,
