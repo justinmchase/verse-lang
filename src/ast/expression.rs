@@ -3,16 +3,16 @@ use super::super::runtime::{
 };
 use super::Pattern;
 
-#[derive(Debug, PartialEq, Eq, Hash, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Expression {
   // literals
   Literal(Value),
+  Function(Box<Pattern>, Box<Expression>),
 
   // Unary expressions
   Ref(&'static str),
   Call(Box<Expression>, Vec<Box<Expression>>),
   Destructure(Box<Pattern>, Box<Expression>), // [x,y,z] = [1,2,3]
-  Return(Box<Expression>),
 
   // Binary expressions
   Add(Box<Expression>, Box<Expression>),

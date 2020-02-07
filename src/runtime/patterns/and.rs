@@ -1,5 +1,4 @@
 use std::rc::Rc;
-use std::collections::HashMap;
 use super::super::super::ast::{
   Pattern
 };

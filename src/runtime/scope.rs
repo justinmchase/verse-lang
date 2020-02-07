@@ -25,6 +25,15 @@ impl Scope {
     }
   }
 
+  pub fn empty() -> Self {
+    Scope {
+      index: None,
+      value: Value::None,
+      input: Rc::new(vec![]),
+      vars: Rc::new(RefCell::new(HashMap::new())),
+    }
+  }
+
   pub fn next(&self) -> Option<Scope> {
     let index = self.next_pos();
     match self.input.get(index) {
@@ -55,6 +64,17 @@ impl Scope {
       input: self.input.clone(),
       vars: self.vars.clone()
     }
+  }
+
+  pub fn get_var(&self, name: String) -> Option<Value> {
+    match (*self.vars).borrow_mut().get(&name) {
+      Some(v) => Some(v.clone()),
+      None => None
+    }
+  }
+
+  pub fn clone_vars(&self) -> HashMap<String, Value> {
+    (*self.vars).borrow_mut().clone()
   }
 
   pub fn with(&self, vars: Rc<RefCell<HashMap<String, Value>>>) -> Scope {

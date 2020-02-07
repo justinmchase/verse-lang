@@ -1,13 +1,9 @@
 use std::rc::Rc;
-use std::collections::HashMap;
 use super::super::{
   Scope,
   Match,
   Value,
-  RuntimeError,
-  RuntimeError::{
-    TransformError
-  }
+  RuntimeError
 };
 
 pub fn default(start: Scope) -> Result<Match, RuntimeError> {

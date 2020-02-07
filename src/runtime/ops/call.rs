@@ -1,10 +1,8 @@
 use std::rc::Rc;
+use std::cell::RefCell;
 use super::super::{
   Scope,
   Value,
-  Value::{
-    Function
-  },
   exec,
   transform,
   RuntimeError,
@@ -22,7 +20,7 @@ pub fn call(start: Scope, func: &Expression, args: &Vec<Box<Expression>>) -> Res
   match exec(start.clone(), &func) {
     Ok(value) => {
       match value {
-        Function(p, e) => {
+        Value::Function(p, e, v) => {
           let mut arguments = vec![];
           for a in args.iter() {
             println!("arg: {:?}", &a.clone());
@@ -31,7 +29,8 @@ pub fn call(start: Scope, func: &Expression, args: &Vec<Box<Expression>>) -> Res
               Err(e) => { return Err(e) }
             }
           }
-          let scope = Scope::new(Rc::new(arguments)).with(start.vars);
+          let vars = Rc::new(RefCell::new(v));
+          let scope = Scope::new(Rc::new(arguments)).with(vars);
           match transform(scope, &Pattern::Project(p, e)) {
             Ok(m) => {
               if m.matched {
@@ -62,10 +61,10 @@ fn call_cannot_call_non_function() {
 #[test]
 fn call_can_call_function() {
   let s = Scope::new(Rc::new(vec![]));
-  let f = Expression::Literal(Value::Function(
+  let f = Expression::Function(
     Box::new(Pattern::Default),
     Box::new(Expression::Literal(Value::Int(1)))
-  ));
+  );
   let a = vec![];
   let r = call(s, &f, &a);
   assert_eq!(r, Ok(Value::Int(1)));
@@ -76,13 +75,13 @@ fn call_expr_can_ref_vars() {
   let s = Scope::new(Rc::new(vec![]));
   s.add_var("x".to_string(), Value::Int(11));
 
-  let f = Expression::Literal(Value::Function(
+  let f = Expression::Function(
     Box::new(Pattern::Var("y", Box::new(Pattern::Any))),
     Box::new(Expression::Add(
       Box::new(Expression::Ref("x")),
       Box::new(Expression::Ref("y")),
     )
-  )));
+  ));
 
   let a = vec![Box::new(Expression::Literal(Value::Int(7)))];
   let r = call(s, &f, &a);

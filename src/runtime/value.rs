@@ -1,15 +1,16 @@
+use std::collections::HashMap;
 use super::super::ast::{
   Expression,
   Pattern,
 };
 
-#[derive(Debug, PartialEq, Eq, Hash, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Value {
   None,
   Int(i32),
   String(String),
   Array(Vec<Value>),
-  Function(Box<Pattern>, Box<Expression>)
+  Function(Box<Pattern>, Box<Expression>, HashMap<String, Value>)
 }
 
 pub fn value_cmp(left: &Value, right: &Value) -> Option<i8> {

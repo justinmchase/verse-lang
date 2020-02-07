@@ -1,7 +1,7 @@
 use super::expression::Expression;
 // use super::super::runtime::{ Value };
 
-#[derive(Debug, PartialEq, Eq, Hash, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Pattern {
   And(Vec<Box<Pattern>>),
   Any,

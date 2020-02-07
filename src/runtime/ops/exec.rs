@@ -10,35 +10,25 @@ use super::super::super::{
       destructure,
       literal,
       reference,
-      ret,
       subtract,
+      function,
     },
   },
   ast::{
-    Expression,
-    Expression::{
-      Add,
-      Block,
-      Call,
-      Destructure,
-      Literal,
-      Ref,
-      Return,
-      Sub,
-    }
+    Expression
   }
 };
 
 pub fn exec(scope: Scope, expr: &Expression) -> Result<Value, RuntimeError> {
   println!(" op: {:?}", expr);
   match expr {
-    Add(l, r) => add(scope, l, r),
-    Block(e) => block(scope, e),
-    Call(v, args) => call(scope, v, args),
-    Destructure(p, e) => destructure(scope, p, e),
-    Literal(v) => literal(scope, v),
-    Ref(name) => reference(scope, name),
-    Return(e) => ret(scope, e),
-    Sub(l, r) => subtract(scope, l, r),
+    Expression::Add(l, r) => add(scope, l, r),
+    Expression::Block(e) => block(scope, e),
+    Expression::Call(v, args) => call(scope, v, args),
+    Expression::Destructure(p, e) => destructure(scope, p, e),
+    Expression::Literal(v) => literal(scope, v),
+    Expression::Ref(name) => reference(scope, name),
+    Expression::Sub(l, r) => subtract(scope, l, r),
+    Expression::Function(p, e) => function(scope, p, e),
   }
 }

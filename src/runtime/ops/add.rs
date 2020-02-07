@@ -22,13 +22,13 @@ pub fn add(scope: Scope, left: &Expression, right: &Expression) -> Result<Value,
   match l {
     Value::Int(li32) => match r {
       Value::Int(ri32) => Ok(Value::Int(li32 + ri32)),
-      _ => Err(InvalidValueError)
+      _ => Err(InvalidValueError(r))
     },
     Value::String(lstr) => match r {
       Value::String(rstr) => Ok(Value::String(format!("{}{}", lstr, rstr))),
-      _ => Err(InvalidValueError)
+      _ => Err(InvalidValueError(r))
     },
-    _ => Err(InvalidValueError)
+    _ => Err(InvalidValueError(l))
   }
 }
 
@@ -37,9 +37,9 @@ fn add_tests() {
   let values = vec![
     (Value::Int(1), Value::Int(2), Ok(Value::Int(3))),
     (Value::String("a".to_string()), Value::String("b".to_string()), Ok(Value::String("ab".to_string()))),
-    (Value::String("a".to_string()), Value::Int(0), Err(InvalidValueError)),
-    (Value::Int(0), Value::String("a".to_string()), Err(InvalidValueError)),
-    (Value::None, Value::None, Err(InvalidValueError)),
+    (Value::String("a".to_string()), Value::Int(0), Err(InvalidValueError(Value::Int(0)))),
+    (Value::Int(0), Value::String("a".to_string()), Err(InvalidValueError(Value::String("a".to_string())))),
+    (Value::None, Value::None, Err(InvalidValueError(Value::None))),
 
     // tood: all combinations...
   ];

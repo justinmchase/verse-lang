@@ -7,10 +7,7 @@ use super::super::{
   Scope,
   Match,
   transform,
-  RuntimeError,
-  RuntimeError::{
-    TransformError
-  }
+  RuntimeError
 };
 
 pub fn array(start: Scope, pattern: &Option<Box<Pattern>>) -> Result<Match, RuntimeError> {
@@ -24,17 +21,17 @@ pub fn array(start: Scope, pattern: &Option<Box<Pattern>>) -> Result<Match, Runt
               let args = Rc::new(items.to_vec());
               let s = Scope::new(args).with(n.vars);
               match transform(s, p) {
-                Ok(m) => Ok(Match::ok(Value::Array(items), start, next)),
+                Ok(_m) => Ok(Match::ok(Value::Array(items), start, next)),
                 Err(e) => Err(e)
               }
             },
             None => Ok(Match::ok(Value::Array(items), start, next))
           }
         },
-        _ => Err(TransformError)
+        _ => Err(RuntimeError::InvalidValueError(n.value))
       }
     },
-    None => Err(TransformError)
+    None => Err(RuntimeError::ScopeEmptyError)
   }
 }
 
