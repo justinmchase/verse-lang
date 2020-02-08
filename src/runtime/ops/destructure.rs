@@ -18,7 +18,7 @@ pub fn destructure(start: Scope, pattern: &Pattern, expression: &Expression) -> 
   match exec(start.clone(), &expression) {
     Ok(value) => {
       let args = Rc::new(vec![value]);
-      let scope = Scope::new(args).with(start.vars);
+      let scope = Scope::new(args).with_vars(start.vars);
       match transform(scope, pattern) {
         Ok(m) => {
           if m.matched {

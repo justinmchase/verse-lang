@@ -8,10 +8,11 @@ pub enum Expression {
   // literals
   Literal(Value),
   Function(Box<Pattern>, Box<Expression>),
+  Array(Vec<Box<Expression>>),
 
   // Unary expressions
   Ref(&'static str),
-  Call(Box<Expression>, Vec<Box<Expression>>),
+  Call(Box<Expression>, Option<Box<Expression>>),
   Destructure(Box<Pattern>, Box<Expression>), // [x,y,z] = [1,2,3]
 
   // Binary expressions

@@ -77,7 +77,7 @@ impl Scope {
     (*self.vars).borrow_mut().clone()
   }
 
-  pub fn with(&self, vars: Rc<RefCell<HashMap<String, Value>>>) -> Scope {
+  pub fn with_vars(&self, vars: Rc<RefCell<HashMap<String, Value>>>) -> Scope {
     Scope {
       index: self.index,
       value: self.value.clone(),

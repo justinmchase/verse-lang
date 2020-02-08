@@ -26,14 +26,21 @@ impl Verse {
     }
   }
 
-  pub fn run(&mut self, args: Vec<Value>) -> Result<Value, RuntimeError> {
+  fn get_args(arg: Option<Value>) -> Vec<Value> {
+    match arg {
+      Some(v) => vec![v],
+      None => vec![]
+    }
+  }
+
+  pub fn run(&mut self, arg: Option<Value>) -> Result<Value, RuntimeError> {
     let ex = self.root.export();
     match ex {
       Ok(v) => match v {
         Value::Function(p, e, v) => {
-          let args = Rc::new(args);
+          let args = Rc::new(Verse::get_args(arg));
           let vars = Rc::new(RefCell::new(v));
-          let scope = Scope::new(args).with(vars);
+          let scope = Scope::new(args).with_vars(vars);
           println!();
           println!("----");
           println!("run: {:?}", scope.clone());

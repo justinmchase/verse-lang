@@ -5,6 +5,7 @@ use super::super::super::{
     RuntimeError,
     ops::{
       add,
+      array,
       block,
       call,
       destructure,
@@ -30,5 +31,6 @@ pub fn exec(scope: Scope, expr: &Expression) -> Result<Value, RuntimeError> {
     Expression::Ref(name) => reference(scope, name),
     Expression::Sub(l, r) => subtract(scope, l, r),
     Expression::Function(p, e) => function(scope, p, e),
+    Expression::Array(e) => array(scope, e),
   }
 }

@@ -1,4 +1,5 @@
 pub use add::add;
+pub use array::array;
 pub use block::block;
 pub use call::call;
 pub use destructure::destructure;
@@ -9,6 +10,7 @@ pub use reference::reference;
 pub use subtract::subtract;
 
 mod add;
+mod array;
 mod block;
 mod call;
 mod destructure;

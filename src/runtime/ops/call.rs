@@ -16,27 +16,34 @@ use super::super::super::ast::{
   Pattern,
 };
 
-pub fn call(start: Scope, func: &Expression, args: &Vec<Box<Expression>>) -> Result<Value, RuntimeError> {
+fn get_arg(s: Scope, arg: &Option<Box<Expression>>) -> Result<Vec<Value>, RuntimeError> {
+  match arg {
+    Some(e) => match exec(s, e) {
+      Ok(v) => Ok(vec![v]),
+      Err(e) => Err(e)
+    },
+    None => Ok(vec![])
+  }
+}
+
+pub fn call(start: Scope, func: &Expression, arg: &Option<Box<Expression>>) -> Result<Value, RuntimeError> {
   match exec(start.clone(), &func) {
     Ok(value) => {
       match value {
         Value::Function(p, e, v) => {
-          let mut arguments = vec![];
-          for a in args.iter() {
-            println!("arg: {:?}", &a.clone());
-            match exec(start.clone(), &a) {
-              Ok(v) => arguments.push(v),
-              Err(e) => { return Err(e) }
-            }
-          }
-          let vars = Rc::new(RefCell::new(v));
-          let scope = Scope::new(Rc::new(arguments)).with(vars);
-          match transform(scope, &Pattern::Project(p, e)) {
-            Ok(m) => {
-              if m.matched {
-                Ok(m.value)
-              } else {
-                Err(PatternNotMatchedError)
+          match get_arg(start, arg) {
+            Ok(a) => {
+              let vars = Rc::new(RefCell::new(v));
+              let scope = Scope::new(Rc::new(a)).with_vars(vars);
+              match transform(scope, &Pattern::Project(p, e)) {
+                Ok(m) => {
+                  if m.matched {
+                    Ok(m.value)
+                  } else {
+                    Err(PatternNotMatchedError)
+                  }
+                },
+                Err(e) => Err(e)
               }
             },
             Err(e) => Err(e)
@@ -53,8 +60,7 @@ pub fn call(start: Scope, func: &Expression, args: &Vec<Box<Expression>>) -> Res
 fn call_cannot_call_non_function() {
   let s = Scope::new(Rc::new(vec![]));
   let f = Expression::Literal(Value::None);
-  let a = vec![];
-  let r = call(s, &f, &a);
+  let r = call(s, &f, &None);
   assert_eq!(r, Err(NotCallableError(Value::None)));
 }
 
@@ -65,7 +71,7 @@ fn call_can_call_function() {
     Box::new(Pattern::Default),
     Box::new(Expression::Literal(Value::Int(1)))
   );
-  let a = vec![];
+  let a = None;
   let r = call(s, &f, &a);
   assert_eq!(r, Ok(Value::Int(1)));
 }
@@ -83,7 +89,7 @@ fn call_expr_can_ref_vars() {
     )
   ));
 
-  let a = vec![Box::new(Expression::Literal(Value::Int(7)))];
-  let r = call(s, &f, &a);
+  let a = Box::new(Expression::Literal(Value::Int(7)));
+  let r = call(s, &f, &Some(a));
   assert_eq!(r, Ok(Value::Int(18)));
 }

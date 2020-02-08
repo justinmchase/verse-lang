@@ -19,7 +19,7 @@ pub fn array(start: Scope, pattern: &Option<Box<Pattern>>) -> Result<Match, Runt
           match pattern {
             Some(p) => {
               let args = Rc::new(items.to_vec());
-              let s = Scope::new(args).with(n.vars);
+              let s = Scope::new(args).with_vars(n.vars);
               match transform(s, p) {
                 Ok(_m) => Ok(Match::ok(Value::Array(items), start, next)),
                 Err(e) => Err(e)
