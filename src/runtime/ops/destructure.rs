@@ -37,7 +37,7 @@ pub fn destructure(start: Scope, pattern: &Pattern, expression: &Expression) -> 
 #[test]
 fn destructure_succeeds() {
   let s = Scope::empty();
-  let r = destructure(
+  let _r = destructure(
     s.clone(),
     &Pattern::Var("x", Box::new(Pattern::Any)),
     &Expression::Literal(Value::Int(7))
@@ -50,7 +50,7 @@ fn destructure_succeeds() {
 #[test]
 fn destructure_succeeds_through_array() {
   let s = Scope::empty();
-  let r = destructure(
+  let _r = destructure(
     s.clone(),
     &Pattern::Array(Some(Box::new(Pattern::Var("x", Box::new(Pattern::Any))))),
     &Expression::Literal(Value::Array(vec![Value::Int(7)]))

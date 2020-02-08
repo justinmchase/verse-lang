@@ -6,11 +6,8 @@ pub enum Pattern {
   And(Vec<Box<Pattern>>),
   Any,
   Array(Option<Box<Pattern>>),
-  Project(Box<Pattern>, Box<Expression>),
-  Var(&'static str, Box<Pattern>),
   Default,
-  // Value(Value),
-  // Range(Value, Value),
-  // Quantity(Box<Pattern>, usize, Option<usize>),
-  // Or(Vec<Box<Pattern>>)
+  Project(Box<Pattern>, Box<Expression>),
+  Then(Vec<Box<Pattern>>),
+  Var(&'static str, Box<Pattern>),
 }

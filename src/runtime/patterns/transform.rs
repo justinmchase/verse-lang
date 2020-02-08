@@ -11,6 +11,7 @@ use super::{
   any,
   array,
   project,
+  then,
   var,
   default,
 };
@@ -24,6 +25,7 @@ pub fn transform(scope: Scope, pattern: &Pattern) -> Result<Match, RuntimeError>
     Pattern::Any => any(scope),
     Pattern::Array(p) => array(scope, p),
     Pattern::Project(p, expr) => project(scope, p, expr),
+    Pattern::Then(p) => then(scope, p),
     Pattern::Var(name, p) => var(scope, name.to_string(), p),
     Pattern::Default => default(scope),
   }
