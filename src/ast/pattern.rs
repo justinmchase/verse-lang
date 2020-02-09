@@ -8,6 +8,7 @@ pub enum Pattern {
   Array(Option<Box<Pattern>>),
   Default,
   Equal(Value),
+  Or(Vec<Box<Pattern>>),
   Project(Box<Pattern>, Box<Expression>),
   Then(Vec<Box<Pattern>>),
   Var(&'static str, Box<Pattern>),
