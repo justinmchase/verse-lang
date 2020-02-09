@@ -14,6 +14,7 @@ use super::{
   then,
   var,
   default,
+  equal,
 };
 
 pub fn transform(scope: Scope, pattern: &Pattern) -> Result<Match, RuntimeError> {
@@ -28,5 +29,6 @@ pub fn transform(scope: Scope, pattern: &Pattern) -> Result<Match, RuntimeError>
     Pattern::Then(p) => then(scope, p),
     Pattern::Var(name, p) => var(scope, name.to_string(), p),
     Pattern::Default => default(scope),
+    Pattern::Equal(v) => equal(scope, v),
   }
 }
