@@ -5,6 +5,7 @@ pub enum RuntimeError {
   TransformError,
   NotImplementedError,
   ScopeEmptyError,
+  InvalidArgumentError,
   InvalidReferenceError(String),
   InvalidValueError(Value),
   NotCallableError(Value),

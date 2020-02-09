@@ -10,6 +10,7 @@ pub enum Pattern {
   Equal(Value),
   Or(Vec<Box<Pattern>>),
   Project(Box<Pattern>, Box<Expression>),
+  Quantity(Box<Pattern>, Option<usize>, Option<usize>),
   Then(Vec<Box<Pattern>>),
   Var(&'static str, Box<Pattern>),
 }
