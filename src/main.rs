@@ -22,7 +22,7 @@ fn main() {
   //   sub = [x, y] -> x - y
   //   [x, y, z] -> sub[add[x, y], z]
   // }
-  // 
+  //
   // 0 = m[1, 2, 3]
 
   let m = Module::new(Expression::Block(vec![
