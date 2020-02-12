@@ -99,3 +99,22 @@ fn quantity_under_min_fails() {
 
   assert_eq!(m.matched, false);
 }
+
+#[test]
+fn quantity_matches_min_zero() {
+  let s = Scope::new(Rc::new(vec![Value::Int(1)]));
+  let p = Pattern::Equal(Value::Int(0));
+  let m = quantity(s, &p, &Some(0), &Some(1)).unwrap();
+
+  assert_eq!(m.matched, true);
+  assert_eq!(m.value, Value::Array(vec![]));
+}
+
+fn quantity_matches_min_zero_max_one() {
+  let s = Scope::new(Rc::new(vec![Value::Int(1), Value::Int(1)]));
+  let p = Pattern::Equal(Value::Int(1));
+  let m = quantity(s, &p, &Some(0), &Some(1)).unwrap();
+
+  assert_eq!(m.matched, true);
+  assert_eq!(m.value, Value::Array(vec![Value::Int(1)]));
+}
