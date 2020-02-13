@@ -25,7 +25,7 @@ pub fn block(scope: Scope, expressions: &Vec<Box<Expression>>) -> Result<Value, 
 #[test]
 fn block_with_expr_succeeds() {
   let e = vec![
-    Box::new(Expression::Literal(Value::Int(1)))
+    Box::new(Expression::Int(1))
   ];
   let s = Scope::new(Rc::new(vec![]));
   let r = block(s, &e);
@@ -43,8 +43,8 @@ fn block_with_no_expr_returns_none() {
 #[test]
 fn block_last_expression_returns() {
   let e = vec![
-    Box::new(Expression::Literal(Value::Int(1))),
-    Box::new(Expression::Literal(Value::Int(2)))
+    Box::new(Expression::Int(1)),
+    Box::new(Expression::Int(2))
   ];
   let s = Scope::new(Rc::new(vec![]));
   let r = block(s, &e);
@@ -57,7 +57,7 @@ fn block_expressions_share_scope() {
   let e = vec![
     Box::new(Expression::Destructure(
       Box::new(Pattern::Var("x", Box::new(Pattern::Any))),
-      Box::new(Expression::Literal(Value::Int(7)))
+      Box::new(Expression::Int(7))
     )),
     Box::new(Expression::Ref("x"))
   ];

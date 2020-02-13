@@ -7,6 +7,7 @@ use super::Pattern;
 pub enum Expression {
   // literals
   None,
+  Int(i32),
   Literal(Value),
   Function(Box<Pattern>, Box<Expression>),
   Array(Vec<Box<Expression>>),

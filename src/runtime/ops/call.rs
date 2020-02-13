@@ -59,7 +59,7 @@ pub fn call(start: Scope, func: &Expression, arg: &Option<Box<Expression>>) -> R
 #[test]
 fn call_cannot_call_non_function() {
   let s = Scope::new(Rc::new(vec![]));
-  let f = Expression::Literal(Value::None);
+  let f = Expression::None;
   let r = call(s, &f, &None);
   assert_eq!(r, Err(NotCallableError(Value::None)));
 }
@@ -69,7 +69,7 @@ fn call_can_call_function() {
   let s = Scope::new(Rc::new(vec![]));
   let f = Expression::Function(
     Box::new(Pattern::Default),
-    Box::new(Expression::Literal(Value::Int(1)))
+    Box::new(Expression::Int(1))
   );
   let a = None;
   let r = call(s, &f, &a);
@@ -89,7 +89,7 @@ fn call_expr_can_ref_vars() {
     )
   ));
 
-  let a = Box::new(Expression::Literal(Value::Int(7)));
+  let a = Box::new(Expression::Int(7));
   let r = call(s, &f, &Some(a));
   assert_eq!(r, Ok(Value::Int(18)));
 }

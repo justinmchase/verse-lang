@@ -25,7 +25,7 @@ pub fn project(start: Scope, pattern: &Pattern, expression: &Expression) -> Resu
 #[test]
 fn project_success() {
   let p = Pattern::Any;
-  let e = Expression::Literal(Value::Int(7));
+  let e = Expression::Int(7);
   let s = Scope::new(Rc::new(vec![Value::Int(11)]));
 
   let r = project(s, &p, &e);
