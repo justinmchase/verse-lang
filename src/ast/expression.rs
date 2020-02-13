@@ -8,7 +8,7 @@ pub enum Expression {
   // literals
   None,
   Int(i32),
-  Literal(Value),
+  String(String),
   Function(Box<Pattern>, Box<Expression>),
   Array(Vec<Box<Expression>>),
 

@@ -40,7 +40,7 @@ fn destructure_succeeds() {
   let _r = destructure(
     s.clone(),
     &Pattern::Var("x", Box::new(Pattern::Any)),
-    &Expression::Literal(Value::Int(7))
+    &Expression::Int(7)
   );
 
   let v = s.get_var("x".to_string());
@@ -53,7 +53,7 @@ fn destructure_succeeds_through_array() {
   let _r = destructure(
     s.clone(),
     &Pattern::Array(Some(Box::new(Pattern::Var("x", Box::new(Pattern::Any))))),
-    &Expression::Literal(Value::Array(vec![Value::Int(7)]))
+    &Expression::Array(vec![Box::new(Expression::Int(7))])
   );
 
   let v = s.get_var("x".to_string());
