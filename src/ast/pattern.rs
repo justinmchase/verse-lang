@@ -14,6 +14,7 @@ pub enum Pattern {
   Or(Vec<Box<Pattern>>),
   Project(Box<Pattern>, Box<Expression>),
   Quantity(Box<Pattern>, Option<usize>, Option<usize>),
+  Ref(String),
   Then(Vec<Box<Pattern>>),
   Type(Type),
   Var(String, Box<Pattern>),

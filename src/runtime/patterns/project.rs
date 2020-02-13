@@ -14,9 +14,12 @@ use super::super::{
 
 pub fn project(start: Scope, pattern: &Pattern, expression: &Expression) -> Result<Match, RuntimeError> {
   match transform(start.clone(), pattern) {
-    Ok(m) => match exec(m.end.clone(), expression) {
-      Ok(v) => Ok(Match::ok(v, start, m.end)),
-      Err(e) => Err(e)
+    Ok(m) => match m.matched {
+      true => match exec(m.end.clone(), expression) {
+        Ok(v) => Ok(Match::ok(v, start, m.end)),
+        Err(e) => Err(e)
+      },
+      false => Ok(m)
     },
     Err(e) => Err(e)
   }
