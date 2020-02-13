@@ -6,6 +6,7 @@ pub use destructure::destructure;
 pub use exec::exec;
 pub use function::function;
 pub use literal::literal;
+pub use none::none;
 pub use reference::reference;
 pub use subtract::subtract;
 
@@ -17,5 +18,6 @@ mod destructure;
 mod exec;
 mod function;
 mod literal;
+mod none;
 mod reference;
 mod subtract;

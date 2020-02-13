@@ -6,6 +6,7 @@ use super::Pattern;
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Expression {
   // literals
+  None,
   Literal(Value),
   Function(Box<Pattern>, Box<Expression>),
   Array(Vec<Box<Expression>>),

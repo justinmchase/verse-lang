@@ -21,16 +21,16 @@ pub fn r#type(start: Scope, t: &Type) -> Result<Match, RuntimeError> {
         Value::None => if t == &Type::None {
           return Ok(Match::ok(value.clone(), start, end));
         },
-        Value::Int(i) => if t == &Type::Int {
+        Value::Int(_i) => if t == &Type::Int {
           return Ok(Match::ok(value.clone(), start, end));
         },
-        Value::String(s) => if t == &Type::String {
+        Value::String(_s) => if t == &Type::String {
           return Ok(Match::ok(value.clone(), start, end));
         },
-        Value::Array(a) => if t == &Type::Array {
+        Value::Array(_a) => if t == &Type::Array {
           return Ok(Match::ok(value.clone(), start, end));
         },
-        Value::Function(p, e, v) => if t == &Type::Function {
+        Value::Function(_p, _e, _v) => if t == &Type::Function {
           return Ok(Match::ok(value.clone(), start, end));
         }
       }
@@ -47,7 +47,7 @@ fn type_matches_correct_values() {
     (Value::Int(0), Type::Int),
     (Value::String("".to_string()), Type::String),
     (Value::Array(vec![]), Type::Array),
-    (Value::Function(Box::new(Pattern::Any), Box::new(Expression::Literal(Value::None)), HashMap::new()), Type::Function),
+    (Value::Function(Box::new(Pattern::Any), Box::new(Expression::None), HashMap::new()), Type::Function),
   ];
 
   for (v, t) in values.iter() {
