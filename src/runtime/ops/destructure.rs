@@ -39,11 +39,11 @@ fn destructure_succeeds() {
   let s = Scope::empty();
   let _r = destructure(
     s.clone(),
-    &Pattern::Var("x", Box::new(Pattern::Any)),
+    &Pattern::Var(String::from("x"), Box::new(Pattern::Any)),
     &Expression::Int(7)
   );
 
-  let v = s.get_var("x".to_string());
+  let v = s.get_var(String::from("x").to_string());
   assert_eq!(v, Some(Value::Int(7)));
 }
 
@@ -52,10 +52,10 @@ fn destructure_succeeds_through_array() {
   let s = Scope::empty();
   let _r = destructure(
     s.clone(),
-    &Pattern::Array(Some(Box::new(Pattern::Var("x", Box::new(Pattern::Any))))),
+    &Pattern::Array(Some(Box::new(Pattern::Var(String::from("x"), Box::new(Pattern::Any))))),
     &Expression::Array(vec![Box::new(Expression::Int(7))])
   );
 
-  let v = s.get_var("x".to_string());
+  let v = s.get_var(String::from("x").to_string());
   assert_eq!(v, Some(Value::Int(7)));
 }

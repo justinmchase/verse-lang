@@ -56,10 +56,10 @@ fn block_expressions_share_scope() {
   let s = Scope::empty();
   let e = vec![
     Box::new(Expression::Destructure(
-      Box::new(Pattern::Var("x", Box::new(Pattern::Any))),
+      Box::new(Pattern::Var(String::from("x"), Box::new(Pattern::Any))),
       Box::new(Expression::Int(7))
     )),
-    Box::new(Expression::Ref("x"))
+    Box::new(Expression::Ref(String::from("x")))
   ];
   let r = block(s, &e);
   assert_eq!(r, Ok(Value::Int(7)));

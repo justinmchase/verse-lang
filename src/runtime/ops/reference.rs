@@ -20,7 +20,7 @@ pub fn reference(scope: Scope, name: &str) -> Result<Value, RuntimeError> {
 #[test]
 fn reference_can_refer_to_var_in_scope() {
   let s = Scope::empty();
-  s.add_var("x".to_string(), Value::Int(1));
+  s.add_var(String::from("x").to_string(), Value::Int(1));
 
   let r = reference(s, "x");
   assert_eq!(r, Ok(Value::Int(1)));
@@ -30,5 +30,5 @@ fn reference_can_refer_to_var_in_scope() {
 fn reference_returns_error() {
   let s = Scope::empty();
   let r = reference(s, "x");
-  assert_eq!(r, Err(InvalidReferenceError("x".to_string())));
+  assert_eq!(r, Err(InvalidReferenceError(String::from("x").to_string())));
 }

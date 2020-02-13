@@ -16,5 +16,5 @@ pub enum Pattern {
   Quantity(Box<Pattern>, Option<usize>, Option<usize>),
   Then(Vec<Box<Pattern>>),
   Type(Type),
-  Var(&'static str, Box<Pattern>),
+  Var(String, Box<Pattern>),
 }

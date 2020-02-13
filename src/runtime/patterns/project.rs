@@ -34,8 +34,8 @@ fn project_success() {
 
 #[test]
 fn project_expr_can_access_vars() {
-  let p = Pattern::Var("x", Box::new(Pattern::Any));
-  let e = Expression::Ref("x");
+  let p = Pattern::Var(String::from("x"), Box::new(Pattern::Any));
+  let e = Expression::Ref(String::from("x"));
   let s = Scope::new(Rc::new(vec![Value::Int(7)]));
 
   let r = project(s, &p, &e);

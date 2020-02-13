@@ -13,7 +13,7 @@ pub enum Expression {
   Array(Vec<Box<Expression>>),
 
   // Unary expressions
-  Ref(&'static str),
+  Ref(String),
   Call(Box<Expression>, Option<Box<Expression>>),
   Destructure(Box<Pattern>, Box<Expression>), // [x,y,z] = [1,2,3]
 

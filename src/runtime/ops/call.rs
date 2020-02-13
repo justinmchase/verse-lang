@@ -79,13 +79,13 @@ fn call_can_call_function() {
 #[test]
 fn call_expr_can_ref_vars() {
   let s = Scope::new(Rc::new(vec![]));
-  s.add_var("x".to_string(), Value::Int(11));
+  s.add_var(String::from("x").to_string(), Value::Int(11));
 
   let f = Expression::Function(
-    Box::new(Pattern::Var("y", Box::new(Pattern::Any))),
+    Box::new(Pattern::Var(String::from("y"), Box::new(Pattern::Any))),
     Box::new(Expression::Add(
-      Box::new(Expression::Ref("x")),
-      Box::new(Expression::Ref("y")),
+      Box::new(Expression::Ref(String::from("x"))),
+      Box::new(Expression::Ref(String::from("y"))),
     )
   ));
 

@@ -28,10 +28,10 @@ pub fn var(start: Scope, name: String, pattern: &Pattern) -> Result<Match, Runti
 #[test]
 fn var_is_added_on_match() {
   let s = Scope::new(Rc::new(vec![Value::Int(7)]));
-  let m = var(s, "x".to_string(), &Pattern::Any);
+  let m = var(s, String::from("x"), &Pattern::Any);
 
   let _mat = m.unwrap();
   let vars = (*_mat.end.vars).borrow_mut();
-  let res = vars.get("x");
+  let res = vars.get(&String::from("x"));
   assert_eq!(res, Some(&Value::Int(7)));
 }

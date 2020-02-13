@@ -123,8 +123,8 @@ fn value_comparisons() {
     (Value::Int(0), Value::Array(vec![]), None),
     
     (Value::String("".to_string()), Value::String("".to_string()), Some(0)),
-    (Value::String("z".to_string()), Value::String("a".to_string()), Some(1)),
-    (Value::String("a".to_string()), Value::String("z".to_string()), Some(-1)),
+    (Value::String(String::from("z").to_string()), Value::String("a".to_string()), Some(1)),
+    (Value::String("a".to_string()), Value::String(String::from("z").to_string()), Some(-1)),
     (Value::String("".to_string()), Value::Array(vec![]), None),
   ];
   
