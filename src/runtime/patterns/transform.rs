@@ -17,6 +17,7 @@ use super::{
   equal,
   or,
   quantity,
+  r#type,
 };
 
 pub fn transform(scope: Scope, pattern: &Pattern) -> Result<Match, RuntimeError> {
@@ -33,6 +34,7 @@ pub fn transform(scope: Scope, pattern: &Pattern) -> Result<Match, RuntimeError>
     Pattern::Project(p, expr) => project(scope, p, expr),
     Pattern::Quantity(p, min, max) => quantity(scope, p, min, max),
     Pattern::Then(p) => then(scope, p),
+    Pattern::Type(t) => r#type(scope, t),
     Pattern::Var(name, p) => var(scope, name.to_string(), p),
   }
 }

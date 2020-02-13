@@ -9,6 +9,7 @@ pub use project::project;
 pub use quantity::quantity;
 pub use then::then;
 pub use transform::transform;
+pub use r#type::r#type;
 pub use var::var;
 
 mod and;
@@ -22,4 +23,5 @@ mod project;
 mod quantity;
 mod then;
 mod transform;
+mod r#type;
 mod var;
