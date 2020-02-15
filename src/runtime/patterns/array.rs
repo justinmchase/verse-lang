@@ -12,23 +12,19 @@ use super::super::{
 
 pub fn array(start: Scope, pattern: &Option<Box<Pattern>>) -> Result<Match, RuntimeError> {
   match start.next() {
-    Some(n) => {
-      let next = n.clone();
-      match n.value {
-        Value::Array(items) => {
-          match pattern {
-            Some(p) => {
-              let args = Rc::new(items.to_vec());
-              let s = Scope::new(args).with_vars(n.vars);
-              match transform(s, p) {
-                Ok(_m) => Ok(Match::ok(Value::Array(items), start, next)),
-                Err(e) => Err(e)
-              }
+    Some(next) => {
+      match next.step_into() {
+        Some(s) => match pattern {
+          Some(p) => match transform(s, p) {
+            Ok(m) => match m.matched {
+              true => Ok(Match::ok(next.value.clone(), start, next)),
+              false => Ok(Match::fail(m.end)),
             },
-            None => Ok(Match::ok(Value::Array(items), start, next))
-          }
+            Err(e) => Err(e)
+          },
+          None => Ok(Match::ok(next.value, start, s))
         },
-        _ => Err(RuntimeError::InvalidValueError(n.value))
+        None => Err(RuntimeError::InvalidValueError(next.value))
       }
     },
     None => Err(RuntimeError::ScopeEmptyError)
@@ -39,9 +35,7 @@ pub fn array(start: Scope, pattern: &Option<Box<Pattern>>) -> Result<Match, Runt
 fn array_matches_empty_array() {
   let s = Scope::new(Rc::new(vec![Value::Array(vec![])]));
   let m = array(s, &None);
-
   let res = m.unwrap();
-
   assert_eq!(res.matched, true);
   assert_eq!(res.value, Value::Array(vec![]));
 }
@@ -50,9 +44,16 @@ fn array_matches_empty_array() {
 fn array_matches_non_empty_array() {
   let s = Scope::new(Rc::new(vec![Value::Array(vec![Value::Int(7)])]));
   let m = array(s, &Some(Box::new(Pattern::Any)));
-
   let res = m.unwrap();
-
   assert_eq!(res.matched, true);
   assert_eq!(res.value, Value::Array(vec![Value::Int(7)]));
+}
+
+
+#[test]
+fn array_fails_if_non_empty_array_doesnt_match_pattern() {
+  let s = Scope::new(Rc::new(vec![Value::Array(vec![Value::Int(7)])]));
+  let m = array(s, &Some(Box::new(Pattern::Equal(Value::Int(11)))));
+  let res = m.unwrap();
+  assert_eq!(res.matched, false);
 }
