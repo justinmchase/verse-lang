@@ -4,8 +4,8 @@ use super::{
 };
 use super::super::runtime::{
   Value,
+  Context,
   exec,
-  Scope,
   RuntimeError
 };
 
@@ -21,8 +21,8 @@ impl Module {
     }
   }
 
-  pub fn export(&mut self) -> Result<Value, RuntimeError> {
-    let scope = Scope::new(Rc::new(vec![]));
-    exec(scope, &self.body)
+  pub fn export(&mut self, global: Rc<Context>) -> Result<Value, RuntimeError> {
+    let moduleContext = Rc::new(Context::from(global));
+    exec(moduleContext, &self.body)
   }
 }

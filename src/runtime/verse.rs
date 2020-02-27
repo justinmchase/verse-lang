@@ -1,10 +1,10 @@
 use std::rc::Rc;
-use std::cell::RefCell;
 use super::super::ast::{
   Module,
   Pattern,
 };
 use super::{
+  Context,
   Value,
   Scope,
   RuntimeError,
@@ -34,17 +34,19 @@ impl Verse {
   }
 
   pub fn run(&mut self, arg: Option<Value>) -> Result<Value, RuntimeError> {
-    let ex = self.root.export();
+    let global = Rc::new(Context::new());
+    let ex = self.root.export(global);
     match ex {
       Ok(v) => match v {
-        Value::Function(p, e, v) => {
+        Value::Function(f, ctx) => {
           let args = Rc::new(Verse::get_args(arg));
-          let vars = Rc::new(RefCell::new(v));
-          let scope = Scope::new(args).with_vars(vars);
+          let scope = Scope::from(args, ctx);
           println!();
           println!("----");
-          println!("run: {:?}", scope.clone());
-          match transform(scope, &Pattern::Project(p, e)) {
+          println!("run: {}", scope.clone());
+          let p = f.pattern;
+          let e = f.expression;
+          match transform(scope, &Pattern::Project(Box::new(p), Box::new(e))) {
             Ok(m) => {
               if m.matched {
                 Ok(m.value)

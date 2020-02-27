@@ -12,12 +12,16 @@ use super::super::{
   exec,
 };
 
-pub fn project(start: Scope, pattern: &Pattern, expression: &Expression) -> Result<Match, RuntimeError> {
+pub fn project(start: Scope, pattern: &Pattern, expression: &Option<Expression>) -> Result<Match, RuntimeError> {
+  let ctx = start.context.clone();
   match transform(start.clone(), pattern) {
     Ok(m) => match m.matched {
-      true => match exec(m.end.clone(), expression) {
-        Ok(v) => Ok(Match::ok(v, start, m.end)),
-        Err(e) => Err(e)
+      true => match expression {
+        Some(e) => match exec(ctx, e) {
+          Ok(v) => Ok(Match::ok(v, start, m.end)),
+          Err(e) => Err(e)
+        },
+        None => Ok(m)
       },
       false => Ok(m)
     },
@@ -28,7 +32,7 @@ pub fn project(start: Scope, pattern: &Pattern, expression: &Expression) -> Resu
 #[test]
 fn project_success() {
   let p = Pattern::Any;
-  let e = Expression::Int(7);
+  let e = Box::new(Some(Expression::Int(7)));
   let s = Scope::new(Rc::new(vec![Value::Int(11)]));
 
   let r = project(s, &p, &e);
@@ -38,7 +42,17 @@ fn project_success() {
 #[test]
 fn project_expr_can_access_vars() {
   let p = Pattern::Var(String::from("x"), Box::new(Pattern::Any));
-  let e = Expression::Ref(String::from("x"));
+  let e = Box::new(Some(Expression::Ref(String::from("x"))));
+  let s = Scope::new(Rc::new(vec![Value::Int(7)]));
+
+  let r = project(s, &p, &e);
+  assert_eq!(r.unwrap().value, Value::Int(7));
+}
+
+#[test]
+fn project_returns_match_without_expression() {
+  let p = Pattern::Any;
+  let e = None;
   let s = Scope::new(Rc::new(vec![Value::Int(7)]));
 
   let r = project(s, &p, &e);

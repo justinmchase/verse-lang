@@ -1,15 +1,12 @@
 use std::rc::Rc;
-use std::collections::HashMap;
-use super::super::super::ast::{
-  Pattern,
-  Expression,
-};
 use super::super::{
   Scope,
   Match,
   Value,
   Type,
-  RuntimeError
+  Function,
+  RuntimeError,
+  Context,
 };
 
 pub fn r#type(start: Scope, t: &Type) -> Result<Match, RuntimeError> {
@@ -30,7 +27,7 @@ pub fn r#type(start: Scope, t: &Type) -> Result<Match, RuntimeError> {
         Value::Array(_a) => if t == &Type::Array {
           return Ok(Match::ok(value.clone(), start, end));
         },
-        Value::Function(_p, _e, _v) => if t == &Type::Function {
+        Value::Function(_f, _v) => if t == &Type::Function {
           return Ok(Match::ok(value.clone(), start, end));
         }
       }
@@ -47,7 +44,7 @@ fn type_matches_correct_values() {
     (Value::Int(0), Type::Int),
     (Value::String("".to_string()), Type::String),
     (Value::Array(vec![]), Type::Array),
-    (Value::Function(Box::new(Pattern::Any), Box::new(Expression::None), HashMap::new()), Type::Function),
+    (Value::Function(Box::new(Function::default()), Rc::new(Context::new())), Type::Function),
   ];
 
   for (v, t) in values.iter() {

@@ -33,10 +33,10 @@ fn main() {
           Box::new(Pattern::Var(String::from("x"), Box::new(Pattern::Any))),
           Box::new(Pattern::Var(String::from("y"), Box::new(Pattern::Any))),
         ]))))),
-        Box::new(Expression::Add(
+        Box::new(Some(Expression::Add(
           Box::new(Expression::Ref(String::from("x"))),
           Box::new(Expression::Ref(String::from("y"))),
-        ))
+        )))
       ))
     )),
     
@@ -47,10 +47,10 @@ fn main() {
           Box::new(Pattern::Var(String::from("x"), Box::new(Pattern::Any))),
           Box::new(Pattern::Var(String::from("y"), Box::new(Pattern::Any))),
         ]))))),
-        Box::new(Expression::Sub(
+        Box::new(Some(Expression::Sub(
           Box::new(Expression::Ref(String::from("x"))),
           Box::new(Expression::Ref(String::from("y"))),
-        ))
+        )))
       ))
     )),
 
@@ -60,7 +60,7 @@ fn main() {
         Box::new(Pattern::Var(String::from("y"), Box::new(Pattern::Any))),
         Box::new(Pattern::Var(String::from("z"), Box::new(Pattern::Any))),
       ]))))),
-      Box::new(Expression::Call(
+      Box::new(Some(Expression::Call(
         Box::new(Expression::Ref(String::from("sub"))),
         Some(Box::new(Expression::Array(vec![
           Box::new(Expression::Call(
@@ -72,7 +72,7 @@ fn main() {
           )),
           Box::new(Expression::Ref(String::from("z")))
         ])))
-      ))
+      )))
     ))
   ]));
   let mut v = Verse::new(m);

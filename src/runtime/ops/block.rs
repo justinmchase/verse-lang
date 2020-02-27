@@ -1,7 +1,7 @@
 use std::rc::Rc;
 use super::super::{
-  Scope,
   Value,
+  Context,
   exec,
   RuntimeError,
 };
@@ -10,11 +10,11 @@ use super::super::super::ast::{
   Pattern,
 };
 
-pub fn block(scope: Scope, expressions: &Vec<Box<Expression>>) -> Result<Value, RuntimeError> {
+pub fn block(context: Rc<Context>, expressions: &Vec<Box<Expression>>) -> Result<Value, RuntimeError> {
   // todo: should handle the return case..
   let mut last = Value::None;
   for expression in expressions.iter() {
-    match exec(scope.clone(), &expression) {
+    match exec(context.clone(), &expression) {
       Err(e) => return Err(e),
       Ok(v) => { last = v; }
     }
@@ -27,16 +27,16 @@ fn block_with_expr_succeeds() {
   let e = vec![
     Box::new(Expression::Int(1))
   ];
-  let s = Scope::new(Rc::new(vec![]));
-  let r = block(s, &e);
+  let c = Rc::new(Context::new());
+  let r = block(c, &e);
   assert_eq!(r, Ok(Value::Int(1)));
 }
 
 #[test]
 fn block_with_no_expr_returns_none() {
   let e = vec![];
-  let s = Scope::new(Rc::new(vec![]));
-  let r = block(s, &e);
+  let c = Rc::new(Context::new());
+  let r = block(c, &e);
   assert_eq!(r, Ok(Value::None));
 }
 
@@ -46,14 +46,14 @@ fn block_last_expression_returns() {
     Box::new(Expression::Int(1)),
     Box::new(Expression::Int(2))
   ];
-  let s = Scope::new(Rc::new(vec![]));
-  let r = block(s, &e);
+  let c = Rc::new(Context::new());
+  let r = block(c, &e);
   assert_eq!(r, Ok(Value::Int(2)));
 }
 
 #[test]
 fn block_expressions_share_scope() {
-  let s = Scope::empty();
+  let c = Rc::new(Context::new());
   let e = vec![
     Box::new(Expression::Destructure(
       Box::new(Pattern::Var(String::from("x"), Box::new(Pattern::Any))),
@@ -61,6 +61,6 @@ fn block_expressions_share_scope() {
     )),
     Box::new(Expression::Ref(String::from("x")))
   ];
-  let r = block(s, &e);
+  let r = block(c, &e);
   assert_eq!(r, Ok(Value::Int(7)));
 }

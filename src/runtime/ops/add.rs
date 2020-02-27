@@ -1,7 +1,7 @@
 use std::rc::Rc;
 use super::super::{
-  Scope,
   Value,
+  Context,
   exec,
   RuntimeError,
   RuntimeError::{
@@ -10,11 +10,11 @@ use super::super::{
 };
 use super::super::super::ast::Expression;
 
-pub fn add(scope: Scope, left: &Expression, right: &Expression) -> Result<Value, RuntimeError> {
-  let r0 = exec(scope.clone(), &left);
+pub fn add(context: Rc<Context>, left: &Expression, right: &Expression) -> Result<Value, RuntimeError> {
+  let r0 = exec(context.clone(), &left);
   if r0.is_err() { return r0; }
   
-  let r1 = exec(scope, &right);
+  let r1 = exec(context.clone(), &right);
   if r1.is_err() { return r1; }
 
   let l = r0.ok().unwrap();
@@ -44,8 +44,8 @@ fn add_tests() {
     // tood: all combinations...
   ];
   for (l, r, v) in values.iter() {
-    let s = Scope::new(Rc::new(vec![]));
-    let res = add(s, l, r);
+    let c = Rc::new(Context::new());
+    let res = add(c, l, r);
     assert_eq!(res, *v);
   }
 }

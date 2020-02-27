@@ -1,8 +1,8 @@
 use std::rc::Rc;
 use super::super::super::ast::Expression;
 use super::super::{
-  Scope,
   Value,
+  Context,
   exec,
   RuntimeError,
   RuntimeError::{
@@ -10,11 +10,11 @@ use super::super::{
   }
 };
 
-pub fn subtract(scope: Scope, left: &Expression, right: &Expression) -> Result<Value, RuntimeError> {
-  let r0 = exec(scope.clone(), left);
+pub fn subtract(context: Rc<Context>, left: &Expression, right: &Expression) -> Result<Value, RuntimeError> {
+  let r0 = exec(context.clone(), left);
   if r0.is_err() { return r0; }
   
-  let r1 = exec(scope.clone(), right);
+  let r1 = exec(context.clone(), right);
   if r1.is_err() { return r1; }
 
   let l = r0.ok().unwrap();
@@ -40,8 +40,8 @@ fn sub_tests() {
     // tood: all combinations...
   ];
   for (l, r, v) in values.iter() {
-    let s = Scope::new(Rc::new(vec![]));
-    let res = subtract(s, l, r);
+    let c = Rc::new(Context::new());
+    let res = subtract(c, l, r);
     assert_eq!(res, *v);
   }
 }

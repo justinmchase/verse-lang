@@ -1,18 +1,18 @@
+use std::rc::Rc;
 use super::super::{
-  Scope,
   Value,
+  Context,
   RuntimeError,
   exec
 };
 use super::super::super::ast::{
-  Expression,
-  Pattern
+  Expression
 };
 
-pub fn array(scope: Scope, exp: &Vec<Box<Expression>>) -> Result<Value, RuntimeError> {
+pub fn array(context: Rc<Context>, exp: &Vec<Box<Expression>>) -> Result<Value, RuntimeError> {
   let mut values = vec![];
   for e in exp.iter() {
-    match exec(scope.clone(), e) {
+    match exec(context.clone(), e) {
       Ok(v) => {
         values.push(v);
       },

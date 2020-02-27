@@ -1,8 +1,12 @@
 use std::rc::Rc;
-use std::cell::RefCell;
 use super::super::{
   Scope,
   Value,
+  Match,
+  Function,
+  Type,
+  Verse,
+  Context,
   exec,
   transform,
   RuntimeError,
@@ -12,13 +16,14 @@ use super::super::{
   }
 };
 use super::super::super::ast::{
+  Module,
   Expression,
   Pattern,
 };
 
-fn get_arg(s: Scope, arg: &Option<Box<Expression>>) -> Result<Vec<Value>, RuntimeError> {
+fn get_arg(ctx: Rc<Context>, arg: &Option<Box<Expression>>) -> Result<Vec<Value>, RuntimeError> {
   match arg {
-    Some(e) => match exec(s, e) {
+    Some(e) => match exec(ctx, e) {
       Ok(v) => Ok(vec![v]),
       Err(e) => Err(e)
     },
@@ -26,16 +31,18 @@ fn get_arg(s: Scope, arg: &Option<Box<Expression>>) -> Result<Vec<Value>, Runtim
   }
 }
 
-pub fn call(start: Scope, func: &Expression, arg: &Option<Box<Expression>>) -> Result<Value, RuntimeError> {
-  match exec(start.clone(), &func) {
+pub fn call(context: Rc<Context>, exp: &Expression, arg: &Option<Box<Expression>>) -> Result<Value, RuntimeError> {
+  match exec(context.clone(), &exp) {
     Ok(value) => {
       match value {
-        Value::Function(p, e, v) => {
-          match get_arg(start, arg) {
+        Value::Function(f, ctx) => {
+          match get_arg(context.clone(), arg) {
             Ok(a) => {
-              let vars = Rc::new(RefCell::new(v));
-              let scope = Scope::new(Rc::new(a)).with_vars(vars);
-              match transform(scope, &Pattern::Project(p, e)) {
+              let s = Scope::from(Rc::new(a), ctx);
+              let p = Box::new(f.pattern);
+              let e = Box::new(f.expression);
+              let pattern = Pattern::Project(p, e);
+              match transform(s, &pattern) {
                 Ok(m) => {
                   if m.matched {
                     Ok(m.value)
@@ -58,38 +65,38 @@ pub fn call(start: Scope, func: &Expression, arg: &Option<Box<Expression>>) -> R
 
 #[test]
 fn call_cannot_call_non_function() {
-  let s = Scope::new(Rc::new(vec![]));
+  let c = Rc::new(Context::new());
   let f = Expression::None;
-  let r = call(s, &f, &None);
+  let r = call(c, &f, &None);
   assert_eq!(r, Err(NotCallableError(Value::None)));
 }
 
 #[test]
 fn call_can_call_function() {
-  let s = Scope::new(Rc::new(vec![]));
+  let c = Rc::new(Context::new());
   let f = Expression::Function(
     Box::new(Pattern::Default),
-    Box::new(Expression::Int(1))
+    Box::new(Some(Expression::Int(1)))
   );
   let a = None;
-  let r = call(s, &f, &a);
+  let r = call(c, &f, &a);
   assert_eq!(r, Ok(Value::Int(1)));
 }
 
 #[test]
 fn call_expr_can_ref_vars() {
-  let s = Scope::new(Rc::new(vec![]));
-  s.add_var(String::from("x").to_string(), Value::Int(11));
+  let c = Rc::new(Context::new());
+  c.add_var(String::from("x").to_string(), Value::Int(11));
 
   let f = Expression::Function(
     Box::new(Pattern::Var(String::from("y"), Box::new(Pattern::Any))),
-    Box::new(Expression::Add(
+    Box::new(Some(Expression::Add(
       Box::new(Expression::Ref(String::from("x"))),
       Box::new(Expression::Ref(String::from("y"))),
-    )
-  ));
+    )))
+  );
 
   let a = Box::new(Expression::Int(7));
-  let r = call(s, &f, &Some(a));
+  let r = call(c, &f, &Some(a));
   assert_eq!(r, Ok(Value::Int(18)));
 }

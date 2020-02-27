@@ -1,15 +1,12 @@
-use super::super::runtime::{
-  Value
-};
 use super::Pattern;
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub enum Expression {
   // literals
   None,
   Int(i32),
   String(String),
-  Function(Box<Pattern>, Box<Expression>),
+  Function(Box<Pattern>, Box<Option<Expression>>),
   Array(Vec<Box<Expression>>),
 
   // Unary expressions

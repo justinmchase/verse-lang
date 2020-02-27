@@ -1,17 +1,24 @@
+use std::fmt;
 use std::rc::Rc;
 use std::cell::RefCell;
 use std::collections::HashMap;
+use std::collections::VecDeque;
 use super::{
-  Value
+  Value,
+  Match,
+  Function,
+  Context,
 };
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(PartialEq, Eq, Clone)]
 pub struct Scope {
-  pub origin: String,
+  pub origin: Option<Box<Scope>>,
   pub input: Rc<Vec<Value>>,
   pub index: Option<usize>,
   pub value: Value,
-  pub vars: Rc<RefCell<HashMap<String, Value>>>
+  pub stack: Rc<RefCell<VecDeque<Function>>>,
+  pub memos: Rc<RefCell<HashMap<(String, Function), Match>>>,
+  pub context: Rc<Context>,
 }
 
 impl Scope {
@@ -19,21 +26,49 @@ impl Scope {
   // New top level scope, no vars
   pub fn new(input: Rc<Vec<Value>>) -> Self {
     Scope {
-      origin: String::from("/"),
+      origin: None,
       index: None,
       value: Value::None,
       input,
-      vars: Rc::new(RefCell::new(HashMap::new())),
+      stack: Rc::new(RefCell::new(VecDeque::new())),
+      memos: Rc::new(RefCell::new(HashMap::new())),
+      context: Rc::new(Context::new()),
+    }
+  }
+
+  pub fn from(input: Rc<Vec<Value>>, context: Rc<Context>) -> Self {
+    Scope {
+      origin: None,
+      index: None,
+      value: Value::None,
+      input,
+      stack: Rc::new(RefCell::new(VecDeque::new())),
+      memos: Rc::new(RefCell::new(HashMap::new())),
+      context,
     }
   }
 
   pub fn empty() -> Self {
     Scope {
-      origin: String::from("/"),
+      origin: None,
       index: None,
       value: Value::None,
       input: Rc::new(vec![]),
-      vars: Rc::new(RefCell::new(HashMap::new())),
+      stack: Rc::new(RefCell::new(VecDeque::new())),
+      memos: Rc::new(RefCell::new(HashMap::new())),
+      context: Rc::new(Context::new()),
+    }
+  }
+
+  pub fn with(&self, context: Rc<Context>) -> Self {
+    Scope {
+      origin: self.origin.clone(),
+      index: self.index.clone(),
+      value: self.value.clone(),
+      input: self.input.clone(),
+      stack: self.stack.clone(),
+      memos: self.memos.clone(),
+      context
     }
   }
 
@@ -46,7 +81,9 @@ impl Scope {
           index: Some(index),
           value: value.clone(),
           input: self.input.clone(),
-          vars: self.vars.clone(),
+          stack: self.stack.clone(),
+          memos: self.memos.clone(),
+          context: self.context.clone()
         })
       },
       None => None
@@ -56,11 +93,13 @@ impl Scope {
   pub fn step_into(&self) -> Option<Scope> {
     match &self.value {
       Value::Array(items) => Some(Scope {
-        origin: format!("{}{}/", self.origin, self.index.unwrap()),
+        origin: Some(Box::new(self.clone())),
         index: None,
         value: Value::None,
         input: Rc::new(items.to_vec()),
-        vars: self.vars.clone()
+        stack: self.stack.clone(),
+        memos: self.memos.clone(),
+        context: self.context.clone(),
       }),
       _ => None
     }
@@ -73,53 +112,62 @@ impl Scope {
     }
   }
 
-  pub fn add_var(&self, name: String, value: Value) -> Scope {
-    (*self.vars).borrow_mut().insert(name, value);
-    Scope {
-      origin: self.origin.clone(),
-      index: self.index,
-      value: self.value.clone(),
-      input: self.input.clone(),
-      vars: self.vars.clone()
+  pub fn position(&self) -> String {
+    match self.index {
+      Some(i) => match &self.origin {
+        Some(o) => format!("{}/{}", o, i),
+        None => format!("/{}", i),
+      },
+      None => String::from("/"),
     }
   }
 
-  pub fn get_var(&self, name: String) -> Option<Value> {
-    match (*self.vars).borrow_mut().get(&name) {
-      Some(v) => Some(v.clone()),
+  pub fn push_stack(&self, func: &Function) {
+    (*self.stack).borrow_mut().push_back(func.clone())
+  }
+
+  pub fn peek_stack(&self) -> Option<Function> {
+    match (*self.stack).borrow_mut().back() {
+      Some(r) => Some(r.clone()),
       None => None
     }
   }
 
-  pub fn clone_vars(&self) -> HashMap<String, Value> {
-    (*self.vars).borrow_mut().clone()
+  pub fn pop_stack(&self) {
+    (*self.stack).borrow_mut().pop_back();
   }
-
-  pub fn with_vars(&self, vars: Rc<RefCell<HashMap<String, Value>>>) -> Scope {
-    Scope {
-      origin: self.origin.clone(),
-      index: self.index,
-      value: self.value.clone(),
-      input: self.input.clone(),
-      vars
+  
+  pub fn set_memo(&self, f: &Function, m: &Match) {
+    (*self.memos).borrow_mut().insert((self.position(), f.clone()), m.clone());
+  }
+  
+  pub fn get_memo(&self, f: &Function) -> Option<Match> {
+    match (*self.memos).borrow_mut().get(&(self.position(), f.clone())) {
+      Some(m) => Some(m.clone()),
+      None => match &self.origin {
+        Some(o) => o.get_memo(f),
+        None => None
+      }
     }
   }
+}
 
-  pub fn with_origin(&self, origin: String) -> Scope {
-    Scope {
-      origin,
-      index: self.index,
-      value: self.value.clone(),
-      input: self.input.clone(),
-      vars: self.vars.clone()
-    }
+impl fmt::Display for Scope {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    write!(f, "{}", self.position())
   }
+}
 
-  pub fn position(&self) -> String {
-    match self.index {
-      Some(i) => format!("{}{}", self.origin, i),
-      None => self.origin.clone(),
-    }
+impl fmt::Debug for Scope {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    write!(
+      f,
+      "Scope {{ position: {:?}, value: {:?}, stack: {:?}, memos: {} }}",
+      self.position(),
+      self.value,
+      (*self.stack).borrow(),
+      (*self.memos).borrow().len()
+   )
   }
 }
 

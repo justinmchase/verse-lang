@@ -1,7 +1,8 @@
+use std::rc::Rc;
 use super::super::super::{
   runtime::{
-    Scope,
     Value,
+    Context,
     RuntimeError,
     ops::{
       add,
@@ -22,19 +23,20 @@ use super::super::super::{
   }
 };
 
-pub fn exec(scope: Scope, expr: &Expression) -> Result<Value, RuntimeError> {
-  println!(" op: {:?}", expr);
+pub fn exec(context: Rc<Context>, expr: &Expression) -> Result<Value, RuntimeError> {
+  println!("  scope: {:?}", context);
+  println!("     op: {:?}", expr);
   match expr {
-    Expression::Add(l, r) => add(scope, l, r),
-    Expression::Block(e) => block(scope, e),
-    Expression::Call(v, args) => call(scope, v, args),
-    Expression::Destructure(p, e) => destructure(scope, p, e),
-    Expression::Int(i) => int(scope, *i),
-    Expression::None => none(scope),
-    Expression::Ref(name) => reference(scope, name),
-    Expression::String(s) => string(scope, s.to_string()),
-    Expression::Sub(l, r) => subtract(scope, l, r),
-    Expression::Function(p, e) => function(scope, p, e),
-    Expression::Array(e) => array(scope, e),
+    Expression::Add(l, r) => add(context, l, r),
+    Expression::Block(e) => block(context, e),
+    Expression::Call(v, args) => call(context, v, args),
+    Expression::Destructure(p, e) => destructure(context, p, e),
+    Expression::Int(i) => int(context, *i),
+    Expression::None => none(context),
+    Expression::Ref(name) => reference(context, name.to_string()),
+    Expression::String(s) => string(context, s.to_string()),
+    Expression::Sub(l, r) => subtract(context, l, r),
+    Expression::Function(p, e) => function(context, p, e),
+    Expression::Array(e) => array(context, e),
   }
 }

@@ -1,16 +1,16 @@
+use std::rc::Rc;
 use super::super::{
-  Scope,
   Value,
+  Context,
   RuntimeError,
   RuntimeError::{
     InvalidReferenceError
   }
 };
 
-pub fn reference(scope: Scope, name: &str) -> Result<Value, RuntimeError> {
-  let vars = (*scope.vars).borrow();
-  let val = vars.get(name);
-  println!("ref: {:?}", val);
+pub fn reference(context: Rc<Context>, name: String) -> Result<Value, RuntimeError> {
+  let val = context.get_var(name.to_string());
+  println!("    ref: {:?}", val);
   match val {
     Some(v) => Ok(v.clone()),
     None => Err(InvalidReferenceError(name.to_string())),
@@ -19,16 +19,16 @@ pub fn reference(scope: Scope, name: &str) -> Result<Value, RuntimeError> {
 
 #[test]
 fn reference_can_refer_to_var_in_scope() {
-  let s = Scope::empty();
-  s.add_var(String::from("x").to_string(), Value::Int(1));
+  let c = Rc::new(Context::new());
+  c.add_var(String::from("x").to_string(), Value::Int(1));
 
-  let r = reference(s, "x");
+  let r = reference(c, String::from("x"));
   assert_eq!(r, Ok(Value::Int(1)));
 }
 
 #[test]
 fn reference_returns_error() {
-  let s = Scope::empty();
-  let r = reference(s, "x");
+  let c = Rc::new(Context::new());
+  let r = reference(c, String::from("x"));
   assert_eq!(r, Err(InvalidReferenceError(String::from("x").to_string())));
 }

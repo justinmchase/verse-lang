@@ -1,17 +1,60 @@
-use std::collections::HashMap;
-use super::super::ast::{
-  Expression,
-  Pattern,
+use std::fmt;
+use std::rc::Rc;
+use std::hash::{ Hash, Hasher };
+use super::{
+  Function,
+  Context,
 };
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(PartialEq, Eq, Clone)]
 pub enum Value {
   None,
   Int(i32),
   String(String),
   Array(Vec<Value>),
-  Function(Box<Pattern>, Box<Expression>, HashMap<String, Value>)
+  Function(Box<Function>, Rc<Context>)
 }
+
+impl Hash for Value {
+  fn hash<H: Hasher>(&self, state: &mut H) {
+    match self {
+      Value::None => None::<i32>.hash(state),
+      Value::Int(i) => i.hash(state),
+      Value::String(s) => s.hash(state),
+      Value::Array(v) => v.hash(state),
+      Value::Function(f, _) => {
+        // omit context to prevent recursion
+        &f.hash(state);
+      }
+    }
+  }
+}
+
+impl fmt::Debug for Value {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    match self {
+      Value::None => write!(f, "None"),
+      Value::Int(i) => write!(f, "Int({:?})", i),
+      Value::String(s) => write!(f, "String({:?})", s),
+      Value::Array(v) => write!(f, "Array({:?})", v),
+      Value::Function(func, _) => write!(f, "Function({:?})", func),
+    }
+  }
+}
+
+impl fmt::Display for Value {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    match self {
+      Value::None => write!(f, "None"),
+      Value::Int(i) => write!(f, "Int({})", i),
+      Value::String(s) => write!(f, "String({})", s),
+      Value::Array(v) => write!(f, "Array({:?})", v),
+      Value::Function(func, _) => write!(f, "Function{:?}", func)
+    }
+  }
+}
+
+
 
 pub fn value_cmp(left: &Value, right: &Value) -> Option<i8> {
   if left == right { return Some(0); }
