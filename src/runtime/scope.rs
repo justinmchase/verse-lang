@@ -3,6 +3,7 @@ use std::rc::Rc;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::collections::VecDeque;
+use std::cmp::Ordering;
 use super::{
   Value,
   Match,
@@ -10,7 +11,7 @@ use super::{
   Context,
 };
 
-#[derive(PartialEq, Eq, Clone)]
+#[derive(Eq, Clone)]
 pub struct Scope {
   pub origin: Option<Box<Scope>>,
   pub input: Rc<Vec<Value>>,
@@ -142,7 +143,10 @@ impl Scope {
   }
   
   pub fn get_memo(&self, f: &Function) -> Option<Match> {
-    match (*self.memos).borrow_mut().get(&(self.position(), f.clone())) {
+    // Careful here, a `.borrow_mut()` causes a panic due to already being borrowed
+    // This can essentially be called in a recursive manner and its important to
+    // keep the borrow mut on RefCell's to only mutations
+    match self.memos.borrow().get(&(self.position(), f.clone())) {
       Some(m) => Some(m.clone()),
       None => match &self.origin {
         Some(o) => o.get_memo(f),
@@ -154,7 +158,7 @@ impl Scope {
 
 impl fmt::Display for Scope {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    write!(f, "{}", self.position())
+    write!(f, "Scope {{ position: {} }}", self.position())
   }
 }
 
@@ -168,6 +172,36 @@ impl fmt::Debug for Scope {
       (*self.stack).borrow(),
       (*self.memos).borrow().len()
    )
+  }
+}
+
+impl PartialOrd for Scope {
+  fn partial_cmp(&self, other: &Scope) -> Option<Ordering> {
+    Some(self.cmp(other))
+  }
+}
+
+impl PartialEq for Scope {
+  fn eq(&self, other: &Scope) -> bool {
+    self.origin == other.origin && self.index == other.index
+  }
+}
+
+impl Ord for Scope {
+  fn cmp(&self, other: &Scope) -> Ordering {
+    if self.origin.is_some() && other.origin.is_some() {
+      match self.origin.cmp(&other.origin) {
+        Ordering::Greater => Ordering::Greater,
+        Ordering::Less => Ordering::Less,
+        Ordering::Equal => self.index.cmp(&other.index)
+      }
+    } else if self.origin.is_none() && other.origin.is_none() {
+      self.index.cmp(&other.index)
+    } else if self.origin.is_some() && other.origin.is_none() {
+      Ordering::Greater
+    } else {
+      Ordering::Less
+    }
   }
 }
 
@@ -191,4 +225,45 @@ fn postition_into_array() {
   let s2 = s1.step_into().unwrap(); // into array at 0
   let s3 = s2.next().unwrap(); // int at index 0 of array
   assert_eq!("/0/0", s3.position());
+}
+
+#[test]
+fn scope_two_empty_scopes_are_equal() {
+  let l = Scope::empty();
+  let r = Scope::empty();
+  assert_eq!(l, r);
+}
+
+#[test]
+fn scope_next_next_greater_than() {
+  let s = Scope::new(Rc::new(vec![Value::Int(1), Value::Int(2)]));
+  let l = s.next().unwrap();
+  let r = l.next().unwrap();
+  assert_ne!(l, r);
+  assert_ne!(l, s);
+  assert_ne!(r, s);
+  assert!(l < r);
+  assert!(r > l);
+  assert!(l > s);
+  assert!(r > s);
+}
+
+#[test]
+fn scope_with_different_origins_are_not_equal() {
+  let s = Scope::new(Rc::new(vec![
+    Value::Array(vec![Value::Int(1)]),
+    Value::Array(vec![Value::Int(1)])
+  ]));
+
+  // They should both have the same value and index but from different origins
+  let l = s.next().unwrap().step_into().unwrap().next().unwrap();
+  let r = s.next().unwrap().next().unwrap().step_into().unwrap().next().unwrap();
+
+  assert_ne!(l, r);
+  assert_ne!(l, s);
+  assert_ne!(r, s);
+  assert!(l < r);
+  assert!(r > l);
+  assert!(l > s);
+  assert!(r > s);
 }

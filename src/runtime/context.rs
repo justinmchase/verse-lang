@@ -1,3 +1,4 @@
+use std::fmt;
 use std::rc::Rc;
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -5,10 +6,10 @@ use super::{
   Value
 };
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(PartialEq, Eq, Clone)]
 pub struct Context {
-  pub outter: Option<Rc<Context>>,
-  pub vars: RefCell<HashMap<String, Value>>
+  outter: Option<Rc<Context>>,
+  vars: RefCell<HashMap<String, Value>>
 }
 
 impl Context {
@@ -27,11 +28,11 @@ impl Context {
   }
   
   pub fn add_var(&self, name: String, value: Value) {
-    self.vars.borrow_mut().insert(name, value);
+    self.vars.borrow_mut().insert(name.to_string(), value);
   }
 
   pub fn get_var(&self, name: String) -> Option<Value> {
-    match self.vars.borrow_mut().get(&name) {
+    match self.vars.borrow().get(&name) {
       Some(v) => Some(v.clone()),
       None => match &self.outter {
         Some(o) => o.get_var(name),
@@ -40,3 +41,25 @@ impl Context {
     }
   }
 }
+
+impl fmt::Display for Context {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    // let vars = self.vars.clone();
+    write!(f,
+      "Context {{ outter: {:?}, vars: {:?} }}",
+      self.outter,
+      self.vars.clone().into_inner().keys()
+    )
+  }
+}
+
+impl fmt::Debug for Context {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    write!(
+      f,
+      "Context {{  }}"
+   )
+  }
+}
+
+

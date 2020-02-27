@@ -48,6 +48,7 @@ impl Verse {
           let e = f.expression;
           match transform(scope, &Pattern::Project(Box::new(p), Box::new(e))) {
             Ok(m) => {
+              println!(" result: {:?}", m);
               if m.matched {
                 Ok(m.value)
               } else {

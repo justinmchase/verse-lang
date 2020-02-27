@@ -12,14 +12,13 @@ use super::super::{
 };
 
 pub fn var(start: Scope, name: String, pattern: &Pattern) -> Result<Match, RuntimeError> {
-  let ctx = start.context.clone();
   match transform(start.clone(), pattern) {
     Ok(m) => {
       let _match = m.clone();
       if _match.matched {
         let end = m.end;
         let value = m.value;
-        ctx.add_var(name.to_string(), value.clone());
+        start.context.add_var(name.to_string(), value.clone());
         println!("    add: {} <- {:?} {:?}", name.to_string(), value, &end);
         Ok(Match::ok(value, start, end))
       } else {

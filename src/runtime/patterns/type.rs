@@ -11,7 +11,7 @@ use super::super::{
 
 pub fn r#type(start: Scope, t: &Type) -> Result<Match, RuntimeError> {
   let n = start.next();
-  match n {
+  match n.clone() {
     Some(end) => {
       let value = &end.value;
       match value {
@@ -34,6 +34,7 @@ pub fn r#type(start: Scope, t: &Type) -> Result<Match, RuntimeError> {
     },
     None => ()
   }
+  println!("Type Match Fail: {:?} is not {:?}", n, t);
   Ok(Match::fail(start))
 }
 

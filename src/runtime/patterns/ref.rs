@@ -25,33 +25,78 @@ use super::super::{
 //
 // 1 = c"hi"
 // 2 = c"by"
+fn grow(start: Scope, func: &Function) -> Result<Match, RuntimeError> {
+  println!("growing...");
+  let p = Box::new(func.pattern.clone());
+  let e = Box::new(func.expression.clone());
+  let s = start.clone();
+  let mut mat = Match::fail(start);
+  loop {
+    s.set_memo(func, &mat);
+    match transform(s.clone(), &Pattern::Project(p.clone(), e.clone())) {
+      Ok(m) => {
+        println!("++GROWN: {:?}", m);
+        if !m.matched || m.end <= mat.end {
+          break;
+        } else {
+          mat = m;
+        }
+      },
+      Err(e) => {
+        return Err(e);
+      }
+    }
+  }
+  Ok(mat)
+}
 
 fn rule(start: &Scope, func: &Function) -> Result<Match, RuntimeError> {
   match start.get_memo(func) {
     Some(m) => {
-      println!("memo.");
+      println!("*MEMO!!*");
+      println!("   memo: {:?}", start);
       if m.is_lr {
-        // todo: implement lr...
-        return Err(RuntimeError::NotImplementedError);
+        match start.peek_stack() {
+          Some(f) => {
+            // If this function is already at the top of the stack then
+            // We have Direct Left Recursion is fine. If it isn't at the top
+            // then we have Indirect LR, which is not solvable or supported.
+            if &f != func {
+              return Err(RuntimeError::IndirectLeftRecursion);
+            }
+          },
+          None => {
+            // This should not be possible unless there is a code error
+            // in this library.
+            return Err(RuntimeError::TransformError);
+          }
+        }
       }
+      println!("--match: {:?}", m);
       Ok(m)
     },
     None => {
-      println!("no memo.");
+      println!("*NO MEMO*");
       start.push_stack(func);
       start.set_memo(func, &Match::lr(start.clone()));
       let s = start.clone();
       let p = Box::new(func.pattern.clone());
       let e = Box::new(func.expression.clone());
-      match transform(s, &Pattern::Project(p, e)) {
+      match transform(s.clone(), &Pattern::Project(p, e)) {
         Ok(m) => {
-          if m.is_lr {
-            // todo: implement lr...
-            return Err(RuntimeError::NotImplementedError);
+          let mut res = m;
+          if res.is_lr {
+            match grow(s.clone(), func) {
+              Ok(m) => res = m,
+              Err(e) => {
+                start.pop_stack();
+                return Err(e);
+              }
+            }
           }
           start.pop_stack();
-          start.set_memo(func, &m);
-          Ok(m)
+          start.set_memo(func, &res);
+          Ok(res)
         },
         Err(e) => {
           start.pop_stack();
@@ -140,7 +185,7 @@ fn call_direct_left_recursion() {
     Box::new(Expression::Destructure(
       Box::new(Pattern::Var(String::from("num"), Box::new(Pattern::Any))),
       Box::new(Expression::Function(
-        Box::new(Pattern::Var(String::from("i"), Box::new(Pattern::Type(Type::Int)))),
+        Box::new(Pattern::Var(String::from("i"), Box::new(Pattern::Type(Type::Int)))), // todo
         Box::new(Some(Expression::Ref(String::from("i"))))
       ))
     )),
@@ -168,7 +213,10 @@ fn call_direct_left_recursion() {
       )),
     )),
 
-    Box::new(Expression::Ref(String::from("sum"))),
+    Box::new(Expression::Function(
+      Box::new(Pattern::Array(Some(Box::new(Pattern::Var(String::from("i"), Box::new(Pattern::Ref(String::from("sum")))))))),
+      Box::new(Some(Expression::Ref(String::from("i")))),
+    )),
   ]));
   let mut v = Verse::new(m);
   let res = v.run(Some(Value::Array(vec![

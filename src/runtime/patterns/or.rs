@@ -16,7 +16,7 @@ pub fn or(start: Scope, patterns: &Vec<Box<Pattern>>) -> Result<Match, RuntimeEr
   for p in patterns.iter() {
     match transform(start.clone(), p) {
       Ok(m) => {
-        if m.matched {
+        if m.matched || m.is_lr {
           return Ok(m);
         }
       },

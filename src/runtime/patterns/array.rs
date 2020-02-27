@@ -8,17 +8,13 @@ use super::super::{
 };
 
 pub fn array(start: Scope, pattern: &Option<Box<Pattern>>) -> Result<Match, RuntimeError> {
-  println!("1");
   match start.next() {
     Some(next) => {
-      println!("2");
       match next.step_into() {
         Some(s) => {
-          println!("3");
           match pattern {
             Some(p) => match transform(s, p) {
               Ok(m) => {
-                println!("4");
                 match m.matched {
                   true => Ok(Match::ok(next.value.clone(), start, next)),
                   false => Ok(Match::fail(m.end)),

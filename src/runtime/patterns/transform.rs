@@ -22,8 +22,8 @@ use super::{
 };
 
 pub fn transform(scope: Scope, pattern: &Pattern) -> Result<Match, RuntimeError> {
-  println!("  scope: {:?}", scope.clone());
   println!("pattern: {:?}", pattern.clone());
+  println!("  scope: {}", scope.clone());
   match pattern {
     Pattern::And(p) => and(scope, p),
     Pattern::Any => any(scope),

@@ -9,5 +9,6 @@ pub enum RuntimeError {
   InvalidReferenceError(String),
   InvalidValueError(Value),
   NotCallableError(Value),
-  PatternNotMatchedError
+  PatternNotMatchedError,
+  IndirectLeftRecursion
 }
