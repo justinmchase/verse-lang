@@ -158,7 +158,7 @@ impl Scope {
 
 impl fmt::Display for Scope {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-    write!(f, "Scope {{ position: {} }}", self.position())
+    write!(f, "{}", self.position())
   }
 }
 

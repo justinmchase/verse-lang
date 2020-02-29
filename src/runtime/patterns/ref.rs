@@ -179,7 +179,7 @@ fn call_direct_left_recursion() {
   //   [i:sum] -> i
   // }
   //
-  // 5 = m[1, 2, 3]
+  // 6 = m[1, 2, 3]
 
   let m = Module::new(Expression::Block(vec![
     Box::new(Expression::Destructure(
