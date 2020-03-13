@@ -1,6 +1,13 @@
 use super::Pattern;
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
+pub enum FieldExpression {
+  Ref(String),
+  Set(String, Box<Expression>),
+  Spread(Box<Expression>)
+}
+
+#[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub enum Expression {
   // literals
   None,
@@ -8,6 +15,7 @@ pub enum Expression {
   String(String),
   Function(Box<Pattern>, Box<Option<Expression>>),
   Array(Vec<Box<Expression>>),
+  Object(Vec<FieldExpression>),
 
   // Unary expressions
   Ref(String),

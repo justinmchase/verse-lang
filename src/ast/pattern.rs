@@ -6,16 +6,24 @@ use super::super::runtime::{
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub enum Pattern {
-  And(Vec<Box<Pattern>>),
+  // Value
   Any,
-  Array(Option<Box<Pattern>>),
   Default,
-  Equal(Value),
-  Or(Vec<Box<Pattern>>),
-  Project(Box<Pattern>, Box<Option<Expression>>),
-  Quantity(Box<Pattern>, Option<usize>, Option<usize>),
-  Ref(String),
-  Then(Vec<Box<Pattern>>),
   Type(Type),
+  Equal(Value),
+  Array(Option<Box<Pattern>>),
+  // todo: Object(fields)
+
+  // Quantifiers
+  Quantity(Box<Pattern>, Option<usize>, Option<usize>),
+  
+  // Logical
+  And(Vec<Box<Pattern>>),
+  Or(Vec<Box<Pattern>>),
+  Then(Vec<Box<Pattern>>),
+
+  // Meta
+  Ref(String),
   Var(String, Box<Pattern>),
+  Project(Box<Pattern>, Box<Option<Expression>>),
 }

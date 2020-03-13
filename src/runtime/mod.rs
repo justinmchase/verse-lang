@@ -9,6 +9,7 @@ pub use value::Value;
 pub use value::value_eq;
 pub use verse::Verse;
 pub use r#match::Match;
+pub use id::Id;
 
 mod context;
 mod ops;
@@ -20,3 +21,4 @@ mod r#type;
 mod value;
 mod verse;
 mod r#match;
+mod id;

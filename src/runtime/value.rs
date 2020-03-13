@@ -1,9 +1,11 @@
 use std::fmt;
 use std::rc::Rc;
+use std::collections::HashMap;
 use std::hash::{ Hash, Hasher };
 use super::{
   Function,
   Context,
+  Id,
 };
 
 #[derive(PartialEq, Eq, Clone)]
@@ -12,7 +14,8 @@ pub enum Value {
   Int(i32),
   String(String),
   Array(Vec<Value>),
-  Function(Box<Function>, Rc<Context>)
+  Function(Box<Function>, Rc<Context>),
+  Object(Id, Rc<HashMap<String, Value>>)
 }
 
 impl Hash for Value {
@@ -25,7 +28,8 @@ impl Hash for Value {
       Value::Function(f, _) => {
         // omit context to prevent recursion
         &f.hash(state);
-      }
+      },
+      Value::Object(id, _) => id.hash(state)
     }
   }
 }
@@ -38,6 +42,7 @@ impl fmt::Debug for Value {
       Value::String(s) => write!(f, "String({:?})", s),
       Value::Array(v) => write!(f, "Array({:?})", v),
       Value::Function(func, _) => write!(f, "Function({:?})", func),
+      Value::Object(id, o) => write!(f, "Object({:?}, {:?})", id, o),
     }
   }
 }
@@ -49,12 +54,11 @@ impl fmt::Display for Value {
       Value::Int(i) => write!(f, "Int({})", i),
       Value::String(s) => write!(f, "String({})", s),
       Value::Array(v) => write!(f, "Array({:?})", v),
-      Value::Function(func, _) => write!(f, "Function{:?}", func)
+      Value::Function(func, _) => write!(f, "Function({:?})", func),
+      Value::Object(_id, o) => write!(f, "Object({:?})", o),
     }
   }
 }
-
-
 
 pub fn value_cmp(left: &Value, right: &Value) -> Option<i8> {
   if left == right { return Some(0); }
@@ -109,47 +113,47 @@ pub fn value_eq(left: &Value, right: &Value) -> bool {
   }
 }
 
-pub fn value_gt(left: &Value, right: &Value) -> bool {
-  match value_cmp(left, right) {
-    Some(v) => match v {
-      1 => true,
-      _ => false
-    }
-    _ => false,
-  }
-}
+// pub fn value_gt(left: &Value, right: &Value) -> bool {
+//   match value_cmp(left, right) {
+//     Some(v) => match v {
+//       1 => true,
+//       _ => false
+//     }
+//     _ => false,
+//   }
+// }
 
-pub fn value_lt(left: &Value, right: &Value) -> bool {
-  match value_cmp(left, right) {
-    Some(v) => match v {
-      -1 => true,
-      _ => false
-    }
-    _ => false,
-  }
-}
+// pub fn value_lt(left: &Value, right: &Value) -> bool {
+//   match value_cmp(left, right) {
+//     Some(v) => match v {
+//       -1 => true,
+//       _ => false
+//     }
+//     _ => false,
+//   }
+// }
 
-pub fn value_ge(left: &Value, right: &Value) -> bool {
-  match value_cmp(left, right) {
-    Some(v) => match v {
-      0 => true,
-      1 => true,
-      _ => false
-    }
-    _ => false,
-  }
-}
+// pub fn value_ge(left: &Value, right: &Value) -> bool {
+//   match value_cmp(left, right) {
+//     Some(v) => match v {
+//       0 => true,
+//       1 => true,
+//       _ => false
+//     }
+//     _ => false,
+//   }
+// }
 
-pub fn value_le(left: &Value, right: &Value) -> bool {
-  match value_cmp(left, right) {
-    Some(v) => match v {
-      -1 => true,
-      0 => true,
-      _ => false
-    }
-    _ => false,
-  }
-}
+// pub fn value_le(left: &Value, right: &Value) -> bool {
+//   match value_cmp(left, right) {
+//     Some(v) => match v {
+//       -1 => true,
+//       0 => true,
+//       _ => false
+//     }
+//     _ => false,
+//   }
+// }
 
 #[test]
 fn value_comparisons() {

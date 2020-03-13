@@ -22,7 +22,7 @@ impl Module {
   }
 
   pub fn export(&mut self, global: Rc<Context>) -> Result<Value, RuntimeError> {
-    let moduleContext = Rc::new(Context::from(global));
-    exec(moduleContext, &self.body)
+    let ctx = Rc::new(Context::from(global));
+    exec(ctx, &self.body)
   }
 }

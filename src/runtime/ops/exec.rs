@@ -13,6 +13,7 @@ use super::super::super::{
       function,
       int,
       none,
+      object,
       reference,
       string,
       subtract,
@@ -38,5 +39,6 @@ pub fn exec(context: Rc<Context>, expr: &Expression) -> Result<Value, RuntimeErr
     Expression::Sub(l, r) => subtract(context, l, r),
     Expression::Function(p, e) => function(context, p, e),
     Expression::Array(e) => array(context, e),
+    Expression::Object(f) => object(context, f),
   }
 }

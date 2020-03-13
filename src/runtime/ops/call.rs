@@ -2,10 +2,6 @@ use std::rc::Rc;
 use super::super::{
   Scope,
   Value,
-  Match,
-  Function,
-  Type,
-  Verse,
   Context,
   exec,
   transform,
@@ -16,7 +12,6 @@ use super::super::{
   }
 };
 use super::super::super::ast::{
-  Module,
   Expression,
   Pattern,
 };

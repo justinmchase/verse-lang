@@ -1,5 +1,4 @@
 use std::rc::Rc;
-use std::cell::RefCell;
 use super::super::super::ast::{
   Pattern,
   Expression,
@@ -26,7 +25,6 @@ use super::super::{
 // 1 = c"hi"
 // 2 = c"by"
 fn grow(start: Scope, func: &Function) -> Result<Match, RuntimeError> {
-  println!("growing...");
   let p = Box::new(func.pattern.clone());
   let e = Box::new(func.expression.clone());
   let s = start.clone();
@@ -35,7 +33,6 @@ fn grow(start: Scope, func: &Function) -> Result<Match, RuntimeError> {
     s.set_memo(func, &mat);
     match transform(s.clone(), &Pattern::Project(p.clone(), e.clone())) {
       Ok(m) => {
-        println!("++GROWN: {:?}", m);
         if !m.matched || m.end <= mat.end {
           break;
         } else {
@@ -53,8 +50,6 @@ fn grow(start: Scope, func: &Function) -> Result<Match, RuntimeError> {
 fn rule(start: &Scope, func: &Function) -> Result<Match, RuntimeError> {
   match start.get_memo(func) {
     Some(m) => {
-      println!("*MEMO!!*");
-      println!("   memo: {:?}", start);
       if m.is_lr {
         match start.peek_stack() {
           Some(f) => {
@@ -72,11 +67,9 @@ fn rule(start: &Scope, func: &Function) -> Result<Match, RuntimeError> {
           }
         }
       }
-      println!("--match: {:?}", m);
       Ok(m)
     },
     None => {
-      println!("*NO MEMO*");
       start.push_stack(func);
       start.set_memo(func, &Match::lr(start.clone()));
       let s = start.clone();

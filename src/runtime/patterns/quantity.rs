@@ -110,6 +110,7 @@ fn quantity_matches_min_zero() {
   assert_eq!(m.value, Value::Array(vec![]));
 }
 
+#[test]
 fn quantity_matches_min_zero_max_one() {
   let s = Scope::new(Rc::new(vec![Value::Int(1), Value::Int(1)]));
   let p = Pattern::Equal(Value::Int(1));

@@ -29,6 +29,9 @@ pub fn r#type(start: Scope, t: &Type) -> Result<Match, RuntimeError> {
         },
         Value::Function(_f, _v) => if t == &Type::Function {
           return Ok(Match::ok(value.clone(), start, end));
+        },
+        Value::Object(_id, _o) => if t == &Type::Object {
+          return Ok(Match::ok(value.clone(), start, end));
         }
       }
     },
