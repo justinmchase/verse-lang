@@ -1,13 +1,11 @@
-use std::rc::Rc;
 use super::super::super::ast::{
   Pattern
 };
 use super::super::{
   Scope,
   Match,
-  Value,
   transform,
-  RuntimeError
+  RuntimeError,
 };
 
 // And applies each rule to the same scope
@@ -28,29 +26,47 @@ pub fn and(start: Scope, patterns: &Vec<Box<Pattern>>) -> Result<Match, RuntimeE
   Ok(_match)
 }
 
-#[test]
-fn and_matches_one() {
-  let s = Scope::new(Rc::new(vec![Value::Int(0)]));
-  let p = vec![Box::new(Pattern::Any)];
-  let m = and(s, &p);
+#[cfg(test)]
+mod tests {
+  use super::and;
+  
+  use std::rc::Rc;
+  use crate::ast::{
+    Pattern,
+  };
+  use crate::runtime::{
+    Value,
+    Verse,
+    Scope,
+  };
+  
+  #[test]
+  fn and_matches_one() {
+    let v = Verse::default();
+    let s = Scope::new(Rc::new(v), Rc::new(vec![Value::Int(0)]));
+    let p = vec![Box::new(Pattern::Any)];
+    let m = and(s, &p);
 
-  assert_eq!(m.unwrap().value, Value::Int(0));
-}
+    assert_eq!(m.unwrap().value, Value::Int(0));
+  }
 
-#[test]
-fn and_matches_same_value_twice() {
-  let s = Scope::new(Rc::new(vec![Value::Int(0), Value::Int(1)]));
-  let p = vec![Box::new(Pattern::Any), Box::new(Pattern::Any)];
-  let m = and(s, &p);
+  #[test]
+  fn and_matches_same_value_twice() {
+    let v = Verse::default();
+    let s = Scope::new(Rc::new(v), Rc::new(vec![Value::Int(0), Value::Int(1)]));
+    let p = vec![Box::new(Pattern::Any), Box::new(Pattern::Any)];
+    let m = and(s, &p);
 
-  assert_eq!(m.unwrap().value, Value::Int(0));
-}
+    assert_eq!(m.unwrap().value, Value::Int(0));
+  }
 
-#[test]
-fn and_fails_if_not_enough_input() {
-  let s = Scope::empty();
-  let p = vec![Box::new(Pattern::Any)];
-  let m = and(s, &p);
+  #[test]
+  fn and_fails_if_not_enough_input() {
+    let v = Verse::default();
+    let s = Scope::empty(Rc::new(v));
+    let p = vec![Box::new(Pattern::Any)];
+    let m = and(s, &p);
 
-  assert_eq!(m.unwrap().matched, false);
+    assert_eq!(m.unwrap().matched, false);
+  }
 }

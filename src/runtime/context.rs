@@ -2,19 +2,26 @@ use std::fmt;
 use std::rc::Rc;
 use std::cell::RefCell;
 use std::collections::HashMap;
-use super::{
-  Value
+use std::hash::{ Hash, Hasher };
+use crate::runtime::{
+  Id,
+  Value,
+  Library
 };
 
 #[derive(PartialEq, Eq, Clone)]
 pub struct Context {
+  id: Id,
+  library: Rc<Library>,
   outter: Option<Rc<Context>>,
-  vars: RefCell<HashMap<String, Value>>
+  vars: RefCell<HashMap<String, Value>>,
 }
 
 impl Context {
-  pub fn new() -> Self {
+  pub fn new(library: Rc<Library>) -> Self {
     Context {
+      id: Id::new(),
+      library: library,
       outter: None,
       vars: RefCell::new(HashMap::new()),
     }
@@ -22,9 +29,15 @@ impl Context {
   
   pub fn from(outter: Rc<Context>) -> Self {
     Context {
+      id: Id::new(),
+      library: outter.library.clone(),
       outter: Some(outter.clone()),
       vars: RefCell::new(HashMap::new())
     }
+  }
+
+  pub fn get_library(&self) -> Rc<Library> {
+    self.library.clone()
   }
   
   pub fn add_var(&self, name: String, value: Value) {
@@ -42,13 +55,18 @@ impl Context {
   }
 }
 
+impl Hash for Context {
+  fn hash<H: Hasher>(&self, state: &mut H) {
+    self.id.hash(state);
+  }
+}
+
 impl fmt::Display for Context {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     // let vars = self.vars.clone();
     write!(f,
-      "Context {{ outter: {:?}, vars: {:?} }}",
-      self.outter,
-      self.vars.clone().into_inner().keys()
+      "Context({})",
+      self.id
     )
   }
 }
@@ -57,7 +75,9 @@ impl fmt::Debug for Context {
   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     write!(
       f,
-      "Context {{  }}"
+      "Context({}, {:?})",
+      self.id,
+      self.vars
    )
   }
 }

@@ -1,8 +1,6 @@
-use std::rc::Rc;
 use super::super::{
   Scope,
   Match,
-  Value,
   RuntimeError,
 };
 
@@ -14,18 +12,32 @@ pub fn any(start: Scope) -> Result<Match, RuntimeError> {
   }
 }
 
-#[test]
-fn any_matches_non_empty() {
-  let s = Scope::new(Rc::new(vec![Value::None]));
-  let m = any(s);
+#[cfg(test)]
+mod tests {
+  use super::any;
+  use std::rc::Rc;
+  use crate::runtime::{
+    Value,
+    Verse,
+    Scope,
+    Match,
+  };
+  
+  #[test]
+  fn any_matches_non_empty() {
+    let v = Verse::default();
+    let s = Scope::new(Rc::new(v), Rc::new(vec![Value::None]));
+    let m = any(s);
 
-  assert_eq!(m.unwrap().value, Value::None);
-}
+    assert_eq!(m.unwrap().value, Value::None);
+  }
 
-#[test]
-fn any_fails_empty() {
-  let s = Scope::new(Rc::new(vec![]));
-  let m = any(s.clone());
+  #[test]
+  fn any_fails_empty() {
+    let v = Verse::default();
+    let s = Scope::new(Rc::new(v), Rc::new(vec![]));
+    let m = any(s.clone());
 
-  assert_eq!(m, Ok(Match::fail(s)));
+    assert_eq!(m, Ok(Match::fail(s)));
+  }
 }

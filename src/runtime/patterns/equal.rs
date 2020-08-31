@@ -1,10 +1,9 @@
-use std::rc::Rc;
 use super::super::{
   Scope,
   Match,
   Value,
   RuntimeError,
-  value_eq
+  value_eq,
 };
 
 pub fn equal(start: Scope, v: &Value) -> Result<Match, RuntimeError> {
@@ -22,27 +21,41 @@ pub fn equal(start: Scope, v: &Value) -> Result<Match, RuntimeError> {
   }
 }
 
-#[test]
-fn equal_does_not_match_empty() {
-  let s = Scope::new(Rc::new(vec![]));
-  let m = equal(s, &Value::Int(0)).unwrap();
+#[cfg(test)]
+mod tests {
+  use super::equal;
+  use std::rc::Rc;
+  use crate::runtime::{
+    Value,
+    Verse,
+    Scope,
+  };
+  
+  #[test]
+  fn equal_does_not_match_empty() {
+    let v = Verse::default();
+    let s = Scope::new(Rc::new(v), Rc::new(vec![]));
+    let m = equal(s, &Value::Int(0)).unwrap();
 
-  assert_eq!(m.matched, false);
-}
+    assert_eq!(m.matched, false);
+  }
 
-#[test]
-fn equal_matches_correct_value() {
-  let s = Scope::new(Rc::new(vec![Value::Int(7)]));
-  let m = equal(s.clone(), &Value::Int(7)).unwrap();
+  #[test]
+  fn equal_matches_correct_value() {
+    let v = Verse::default();
+    let s = Scope::new(Rc::new(v), Rc::new(vec![Value::Int(7)]));
+    let m = equal(s.clone(), &Value::Int(7)).unwrap();
 
-  assert_eq!(m.matched, true);
-  assert_eq!(m.value, Value::Int(7));
-}
+    assert_eq!(m.matched, true);
+    assert_eq!(m.value, Value::Int(7));
+  }
 
-#[test]
-fn equal_does_not_match_wrong_value() {
-  let s = Scope::new(Rc::new(vec![Value::Int(7)]));
-  let m = equal(s.clone(), &Value::Int(11)).unwrap();
+  #[test]
+  fn equal_does_not_match_wrong_value() {
+    let v = Verse::default();
+    let s = Scope::new(Rc::new(v), Rc::new(vec![Value::Int(7)]));
+    let m = equal(s.clone(), &Value::Int(11)).unwrap();
 
-  assert_eq!(m.matched, false);
+    assert_eq!(m.matched, false);
+  }
 }

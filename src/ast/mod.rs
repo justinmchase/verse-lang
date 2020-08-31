@@ -1,8 +1,9 @@
 pub use expression::Expression;
-pub use expression::FieldExpression;
-pub use module::Module;
+pub use field::FieldExpression;
+pub use import::ImportExpression;
 pub use pattern::Pattern;
 
 mod expression;
-mod module;
+mod field;
+mod import;
 mod pattern;

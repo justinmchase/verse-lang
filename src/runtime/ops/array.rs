@@ -1,6 +1,7 @@
 use std::rc::Rc;
 use super::super::{
   Value,
+  Verse,
   Context,
   RuntimeError,
   exec
@@ -9,10 +10,10 @@ use super::super::super::ast::{
   Expression
 };
 
-pub fn array(context: Rc<Context>, exp: &Vec<Box<Expression>>) -> Result<Value, RuntimeError> {
+pub fn array(verse: Rc<Verse>, context: Rc<Context>, exp: &Vec<Box<Expression>>) -> Result<Value, RuntimeError> {
   let mut values = vec![];
   for e in exp.iter() {
-    match exec(context.clone(), e) {
+    match exec(verse.clone(), context.clone(), e) {
       Ok(v) => {
         values.push(v);
       },

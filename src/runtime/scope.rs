@@ -9,6 +9,7 @@ use super::{
   Match,
   Function,
   Context,
+  Verse
 };
 
 #[derive(Eq, Clone)]
@@ -19,37 +20,18 @@ pub struct Scope {
   pub value: Value,
   pub stack: Rc<RefCell<VecDeque<Function>>>,
   pub memos: Rc<RefCell<HashMap<(String, Function), Match>>>,
+  pub verse: Rc<Verse>,
   pub context: Rc<Context>,
 }
 
 impl Scope {
 
-  // New top level scope, no vars
-  pub fn new(input: Rc<Vec<Value>>) -> Self {
-    Scope {
-      origin: None,
-      index: None,
-      value: Value::None,
-      input,
-      stack: Rc::new(RefCell::new(VecDeque::new())),
-      memos: Rc::new(RefCell::new(HashMap::new())),
-      context: Rc::new(Context::new()),
-    }
+  pub fn default() -> Self {
+    let verse = Rc::new(Verse::default());
+    Scope::empty(verse)
   }
-
-  pub fn from(input: Rc<Vec<Value>>, context: Rc<Context>) -> Self {
-    Scope {
-      origin: None,
-      index: None,
-      value: Value::None,
-      input,
-      stack: Rc::new(RefCell::new(VecDeque::new())),
-      memos: Rc::new(RefCell::new(HashMap::new())),
-      context,
-    }
-  }
-
-  pub fn empty() -> Self {
+  
+  pub fn empty(verse: Rc<Verse>) -> Self {
     Scope {
       origin: None,
       index: None,
@@ -57,7 +39,34 @@ impl Scope {
       input: Rc::new(vec![]),
       stack: Rc::new(RefCell::new(VecDeque::new())),
       memos: Rc::new(RefCell::new(HashMap::new())),
-      context: Rc::new(Context::new()),
+      verse: verse.clone(),
+      context: verse.create_context(),
+    }
+  }
+
+  pub fn new(verse: Rc<Verse>, input: Rc<Vec<Value>>) -> Self {
+    Scope {
+      origin: None,
+      index: None,
+      value: Value::None,
+      input,
+      stack: Rc::new(RefCell::new(VecDeque::new())),
+      memos: Rc::new(RefCell::new(HashMap::new())),
+      verse: verse.clone(),
+      context: verse.create_context(),
+    }
+  }
+
+  pub fn from(verse: Rc<Verse>, context: Rc<Context>, input: Rc<Vec<Value>>) -> Self {
+    Scope {
+      origin: None,
+      index: None,
+      value: Value::None,
+      input,
+      stack: Rc::new(RefCell::new(VecDeque::new())),
+      memos: Rc::new(RefCell::new(HashMap::new())),
+      verse: verse.clone(),
+      context: context.clone(),
     }
   }
 
@@ -69,6 +78,7 @@ impl Scope {
       input: self.input.clone(),
       stack: self.stack.clone(),
       memos: self.memos.clone(),
+      verse: self.verse.clone(),
       context
     }
   }
@@ -84,6 +94,7 @@ impl Scope {
           input: self.input.clone(),
           stack: self.stack.clone(),
           memos: self.memos.clone(),
+          verse: self.verse.clone(),
           context: self.context.clone()
         })
       },
@@ -100,6 +111,7 @@ impl Scope {
         input: Rc::new(items.to_vec()),
         stack: self.stack.clone(),
         memos: self.memos.clone(),
+        verse: self.verse.clone(),
         context: self.context.clone(),
       }),
       _ => None
@@ -205,65 +217,81 @@ impl Ord for Scope {
   }
 }
 
-#[test]
-fn position_at_empty() {
-  let s = Scope::empty();
-  assert_eq!("/", s.position());
-}
+#[cfg(test)]
+mod tests {
+  use std::rc::Rc;
+  use crate::runtime::{
+    Value,
+    Scope,
+    Verse
+  };
+    
+  #[test]
+  fn position_at_empty() {
+    let v = Verse::default();
+    let s = Scope::empty(Rc::new(v));
+    assert_eq!("/", s.position());
+  }
 
-#[test]
-fn position_at_first_index() {
-  let s0 = Scope::new(Rc::new(vec![Value::Int(0)]));
-  let s1 = s0.next().unwrap();
-  assert_eq!("/0", s1.position());
-}
+  #[test]
+  fn position_at_first_index() {
+    let v = Verse::default();
+    let s0 = Scope::new(Rc::new(v), Rc::new(vec![Value::Int(0)]));
+    let s1 = s0.next().unwrap();
+    assert_eq!("/0", s1.position());
+  }
 
-#[test]
-fn postition_into_array() {
-  let s0 = Scope::new(Rc::new(vec![Value::Array(vec![Value::Int(0)])]));
-  let s1 = s0.next().unwrap(); // array at 0
-  let s2 = s1.step_into().unwrap(); // into array at 0
-  let s3 = s2.next().unwrap(); // int at index 0 of array
-  assert_eq!("/0/0", s3.position());
-}
+  #[test]
+  fn postition_into_array() {
+    let v = Verse::default();
+    let s0 = Scope::new(Rc::new(v), Rc::new(vec![Value::Array(vec![Value::Int(0)])]));
+    let s1 = s0.next().unwrap(); // array at 0
+    let s2 = s1.step_into().unwrap(); // into array at 0
+    let s3 = s2.next().unwrap(); // int at index 0 of array
+    assert_eq!("/0/0", s3.position());
+  }
 
-#[test]
-fn scope_two_empty_scopes_are_equal() {
-  let l = Scope::empty();
-  let r = Scope::empty();
-  assert_eq!(l, r);
-}
+  #[test]
+  fn scope_two_empty_scopes_are_equal() {
+    let v = Rc::new(Verse::default());
+    let l = Scope::empty(v.clone());
+    let r = Scope::empty(v.clone());
+    assert_eq!(l, r);
+  }
 
-#[test]
-fn scope_next_next_greater_than() {
-  let s = Scope::new(Rc::new(vec![Value::Int(1), Value::Int(2)]));
-  let l = s.next().unwrap();
-  let r = l.next().unwrap();
-  assert_ne!(l, r);
-  assert_ne!(l, s);
-  assert_ne!(r, s);
-  assert!(l < r);
-  assert!(r > l);
-  assert!(l > s);
-  assert!(r > s);
-}
+  #[test]
+  fn scope_next_next_greater_than() {
+    let v = Verse::default();
+    let s = Scope::new(Rc::new(v), Rc::new(vec![Value::Int(1), Value::Int(2)]));
+    let l = s.next().unwrap();
+    let r = l.next().unwrap();
+    assert_ne!(l, r);
+    assert_ne!(l, s);
+    assert_ne!(r, s);
+    assert!(l < r);
+    assert!(r > l);
+    assert!(l > s);
+    assert!(r > s);
+  }
 
-#[test]
-fn scope_with_different_origins_are_not_equal() {
-  let s = Scope::new(Rc::new(vec![
-    Value::Array(vec![Value::Int(1)]),
-    Value::Array(vec![Value::Int(1)])
-  ]));
+  #[test]
+  fn scope_with_different_origins_are_not_equal() {
+    let v = Verse::default();
+    let s = Scope::new(Rc::new(v), Rc::new(vec![
+      Value::Array(vec![Value::Int(1)]),
+      Value::Array(vec![Value::Int(1)])
+    ]));
 
-  // They should both have the same value and index but from different origins
-  let l = s.next().unwrap().step_into().unwrap().next().unwrap();
-  let r = s.next().unwrap().next().unwrap().step_into().unwrap().next().unwrap();
+    // They should both have the same value and index but from different origins
+    let l = s.next().unwrap().step_into().unwrap().next().unwrap();
+    let r = s.next().unwrap().next().unwrap().step_into().unwrap().next().unwrap();
 
-  assert_ne!(l, r);
-  assert_ne!(l, s);
-  assert_ne!(r, s);
-  assert!(l < r);
-  assert!(r > l);
-  assert!(l > s);
-  assert!(r > s);
+    assert_ne!(l, r);
+    assert_ne!(l, s);
+    assert_ne!(r, s);
+    assert!(l < r);
+    assert!(r > l);
+    assert!(l > s);
+    assert!(r > s);
+  }
 }

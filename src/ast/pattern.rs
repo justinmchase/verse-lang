@@ -2,6 +2,7 @@ use super::expression::Expression;
 use super::super::runtime::{
   Value,
   Type,
+  NativeFunctionHandler,
 };
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
@@ -26,4 +27,5 @@ pub enum Pattern {
   Ref(String),
   Var(String, Box<Pattern>),
   Project(Box<Pattern>, Box<Option<Expression>>),
+  ProjectNative(Box<Pattern>, NativeFunctionHandler),
 }

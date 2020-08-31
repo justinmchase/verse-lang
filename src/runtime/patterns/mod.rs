@@ -6,6 +6,7 @@ pub use equal::equal;
 pub use not::not;
 pub use or::or;
 pub use project::project;
+pub use project::project_native;
 pub use quantity::quantity;
 pub use r#ref::r#ref;
 pub use then::then;

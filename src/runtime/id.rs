@@ -68,41 +68,52 @@ impl Hash for Id {
   }
 }
 
+impl fmt::Display for Id {
+  fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    write!(f, "{:?}", self.to_string())
+  }
+}
+
 impl fmt::Debug for Id {
   fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
     write!(f, "{:?}", self.to_string())
   }
 }
 
-#[test]
-fn id_new() {
-  let id = Id::new();
-  assert_eq!(16, id.to_string().len());
-}
+#[cfg(test)]
+mod tests {
+  use super::Id;
 
-#[test]
-fn id_clone_eq() {
-  let id0 = Id::new();
-  let id1 = id0.clone();
-  assert_eq!(id0, id1);
-}
+  #[test]
+  fn id_new() {
+    let id = Id::new();
+    assert_eq!(16, id.to_string().len());
+  }
 
-#[test]
-fn id_neq() {
-  let id0 = Id::new();
-  let id1 = Id::new();
-  assert_ne!(id0, id1);
-}
+  #[test]
+  fn id_clone_eq() {
+    let id0 = Id::new();
+    let id1 = id0.clone();
+    assert_eq!(id0, id1);
+  }
 
-#[test]
-fn id_from_string() {
-  let id0 = Id::from("23fd985729a5cb83").unwrap();
-  assert_eq!(id0.to_string(), String::from("23fd985729a5cb83"));
-}
+  #[test]
+  fn id_neq() {
+    let id0 = Id::new();
+    let id1 = Id::new();
+    assert_ne!(id0, id1);
+  }
 
-#[test]
-fn id_from_same_string_eq() {
-  let id0 = Id::from("274ea3d47f8ba4a8").unwrap();
-  let id1 = Id::from("274ea3d47f8ba4a8").unwrap();
-  assert_eq!(id0, id1);
+  #[test]
+  fn id_from_string() {
+    let id0 = Id::from("23fd985729a5cb83").unwrap();
+    assert_eq!(id0.to_string(), String::from("23fd985729a5cb83"));
+  }
+
+  #[test]
+  fn id_from_same_string_eq() {
+    let id0 = Id::from("274ea3d47f8ba4a8").unwrap();
+    let id1 = Id::from("274ea3d47f8ba4a8").unwrap();
+    assert_eq!(id0, id1);
+  }
 }

@@ -2,8 +2,9 @@ use std::fmt;
 use std::rc::Rc;
 use std::collections::HashMap;
 use std::hash::{ Hash, Hasher };
-use super::{
+use crate::runtime::{
   Function,
+  NativeFunction,
   Context,
   Id,
 };
@@ -15,6 +16,7 @@ pub enum Value {
   String(String),
   Array(Vec<Value>),
   Function(Box<Function>, Rc<Context>),
+  NativeFunction(Box<NativeFunction>, Rc<Context>),
   Object(Id, Rc<HashMap<String, Value>>)
 }
 
@@ -29,6 +31,9 @@ impl Hash for Value {
         // omit context to prevent recursion
         &f.hash(state);
       },
+      Value::NativeFunction(f, _) => {
+        &f.hash(state);
+      }
       Value::Object(id, _) => id.hash(state)
     }
   }
@@ -42,6 +47,7 @@ impl fmt::Debug for Value {
       Value::String(s) => write!(f, "String({:?})", s),
       Value::Array(v) => write!(f, "Array({:?})", v),
       Value::Function(func, _) => write!(f, "Function({:?})", func),
+      Value::NativeFunction(func, _) => write!(f, "NativeFunction({:?})", func),
       Value::Object(id, o) => write!(f, "Object({:?}, {:?})", id, o),
     }
   }
@@ -55,6 +61,7 @@ impl fmt::Display for Value {
       Value::String(s) => write!(f, "String({})", s),
       Value::Array(v) => write!(f, "Array({:?})", v),
       Value::Function(func, _) => write!(f, "Function({:?})", func),
+      Value::NativeFunction(func, _) => write!(f, "NativeFunction({:?})", func),
       Value::Object(_id, o) => write!(f, "Object({:?})", o),
     }
   }
@@ -155,28 +162,36 @@ pub fn value_eq(left: &Value, right: &Value) -> bool {
 //   }
 // }
 
-#[test]
-fn value_comparisons() {
-  let cases = vec![
-    (Value::None, Value::None, Some::<i8>(0)),
-    (Value::None, Value::Int(0), None),
-    (Value::None, Value::String("".to_string()), None),
-    (Value::None, Value::Array(vec![]), None),
+#[cfg(test)]
+mod tests {
+  use super::{
+    value_cmp,
+    Value
+  };
+
+  #[test]
+  fn value_comparisons() {
+    let cases = vec![
+      (Value::None, Value::None, Some::<i8>(0)),
+      (Value::None, Value::Int(0), None),
+      (Value::None, Value::String("".to_string()), None),
+      (Value::None, Value::Array(vec![]), None),
+      
+      (Value::Int(0), Value::Int(0), Some(0)),
+      (Value::Int(1), Value::Int(0), Some(1)),
+      (Value::Int(0), Value::Int(1), Some(-1)),
+      (Value::Int(0), Value::String("".to_string()), None),
+      (Value::Int(0), Value::Array(vec![]), None),
+      
+      (Value::String("".to_string()), Value::String("".to_string()), Some(0)),
+      (Value::String(String::from("z").to_string()), Value::String("a".to_string()), Some(1)),
+      (Value::String("a".to_string()), Value::String(String::from("z").to_string()), Some(-1)),
+      (Value::String("".to_string()), Value::Array(vec![]), None),
+    ];
     
-    (Value::Int(0), Value::Int(0), Some(0)),
-    (Value::Int(1), Value::Int(0), Some(1)),
-    (Value::Int(0), Value::Int(1), Some(-1)),
-    (Value::Int(0), Value::String("".to_string()), None),
-    (Value::Int(0), Value::Array(vec![]), None),
-    
-    (Value::String("".to_string()), Value::String("".to_string()), Some(0)),
-    (Value::String(String::from("z").to_string()), Value::String("a".to_string()), Some(1)),
-    (Value::String("a".to_string()), Value::String(String::from("z").to_string()), Some(-1)),
-    (Value::String("".to_string()), Value::Array(vec![]), None),
-  ];
-  
-  for (v0, v1, expected) in cases.iter() {
-    let res = value_cmp(&v0, &v1);
-    assert_eq!(&res, expected);
+    for (v0, v1, expected) in cases.iter() {
+      let res = value_cmp(&v0, &v1);
+      assert_eq!(&res, expected);
+    }
   }
 }
