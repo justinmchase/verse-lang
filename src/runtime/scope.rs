@@ -1,16 +1,11 @@
-use std::fmt;
-use std::rc::Rc;
+use crate::ast::Pattern;
+use crate::runtime::{Context, Match, Value, Verse};
 use std::cell::RefCell;
+use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::collections::VecDeque;
-use std::cmp::Ordering;
-use super::{
-  Value,
-  Match,
-  Function,
-  Context,
-  Verse
-};
+use std::fmt;
+use std::rc::Rc;
 
 #[derive(Eq, Clone)]
 pub struct Scope {
@@ -18,19 +13,17 @@ pub struct Scope {
   pub input: Rc<Vec<Value>>,
   pub index: Option<usize>,
   pub value: Value,
-  pub stack: Rc<RefCell<VecDeque<Function>>>,
-  pub memos: Rc<RefCell<HashMap<(String, Function), Match>>>,
+  pub stack: Rc<RefCell<VecDeque<Pattern>>>,
+  pub memos: Rc<RefCell<HashMap<(String, Pattern), Match>>>,
   pub verse: Rc<Verse>,
   pub context: Rc<Context>,
 }
 
 impl Scope {
-
   pub fn default() -> Self {
     let verse = Rc::new(Verse::default());
     Scope::empty(verse)
   }
-  
   pub fn empty(verse: Rc<Verse>) -> Self {
     Scope {
       origin: None,
@@ -79,26 +72,24 @@ impl Scope {
       stack: self.stack.clone(),
       memos: self.memos.clone(),
       verse: self.verse.clone(),
-      context
+      context,
     }
   }
 
   pub fn next(&self) -> Option<Scope> {
     let index = self.next_pos();
     match self.input.get(index) {
-      Some(value) => {
-        Some(Scope {
-          origin: self.origin.clone(),
-          index: Some(index),
-          value: value.clone(),
-          input: self.input.clone(),
-          stack: self.stack.clone(),
-          memos: self.memos.clone(),
-          verse: self.verse.clone(),
-          context: self.context.clone()
-        })
-      },
-      None => None
+      Some(value) => Some(Scope {
+        origin: self.origin.clone(),
+        index: Some(index),
+        value: value.clone(),
+        input: self.input.clone(),
+        stack: self.stack.clone(),
+        memos: self.memos.clone(),
+        verse: self.verse.clone(),
+        context: self.context.clone(),
+      }),
+      None => None,
     }
   }
 
@@ -114,14 +105,14 @@ impl Scope {
         verse: self.verse.clone(),
         context: self.context.clone(),
       }),
-      _ => None
+      _ => None,
     }
   }
 
   fn next_pos(&self) -> usize {
     match self.index {
       Some(i) => i + 1,
-      None => 0
+      None => 0,
     }
   }
 
@@ -135,35 +126,35 @@ impl Scope {
     }
   }
 
-  pub fn push_stack(&self, func: &Function) {
-    (*self.stack).borrow_mut().push_back(func.clone())
+  pub fn push_stack(&self, pattern: &Pattern) {
+    (*self.stack).borrow_mut().push_back(pattern.clone())
   }
 
-  pub fn peek_stack(&self) -> Option<Function> {
+  pub fn peek_stack(&self) -> Option<Pattern> {
     match (*self.stack).borrow_mut().back() {
       Some(r) => Some(r.clone()),
-      None => None
+      None => None,
     }
   }
 
   pub fn pop_stack(&self) {
     (*self.stack).borrow_mut().pop_back();
   }
-  
-  pub fn set_memo(&self, f: &Function, m: &Match) {
-    (*self.memos).borrow_mut().insert((self.position(), f.clone()), m.clone());
+  pub fn set_memo(&self, p: &Pattern, m: &Match) {
+    (*self.memos)
+      .borrow_mut()
+      .insert((self.position(), p.clone()), m.clone());
   }
-  
-  pub fn get_memo(&self, f: &Function) -> Option<Match> {
+  pub fn get_memo(&self, p: &Pattern) -> Option<Match> {
     // Careful here, a `.borrow_mut()` causes a panic due to already being borrowed
     // This can essentially be called in a recursive manner and its important to
     // keep the borrow mut on RefCell's to only mutations
-    match self.memos.borrow().get(&(self.position(), f.clone())) {
+    match self.memos.borrow().get(&(self.position(), p.clone())) {
       Some(m) => Some(m.clone()),
       None => match &self.origin {
-        Some(o) => o.get_memo(f),
-        None => None
-      }
+        Some(o) => o.get_memo(p),
+        None => None,
+      },
     }
   }
 }
@@ -183,7 +174,7 @@ impl fmt::Debug for Scope {
       self.value,
       (*self.stack).borrow(),
       (*self.memos).borrow().len()
-   )
+    )
   }
 }
 
@@ -205,7 +196,7 @@ impl Ord for Scope {
       match self.origin.cmp(&other.origin) {
         Ordering::Greater => Ordering::Greater,
         Ordering::Less => Ordering::Less,
-        Ordering::Equal => self.index.cmp(&other.index)
+        Ordering::Equal => self.index.cmp(&other.index),
       }
     } else if self.origin.is_none() && other.origin.is_none() {
       self.index.cmp(&other.index)
@@ -219,13 +210,8 @@ impl Ord for Scope {
 
 #[cfg(test)]
 mod tests {
+  use crate::runtime::{Scope, Value, Verse};
   use std::rc::Rc;
-  use crate::runtime::{
-    Value,
-    Scope,
-    Verse
-  };
-    
   #[test]
   fn position_at_empty() {
     let v = Verse::default();
@@ -277,14 +263,25 @@ mod tests {
   #[test]
   fn scope_with_different_origins_are_not_equal() {
     let v = Verse::default();
-    let s = Scope::new(Rc::new(v), Rc::new(vec![
-      Value::Array(vec![Value::Int(1)]),
-      Value::Array(vec![Value::Int(1)])
-    ]));
+    let s = Scope::new(
+      Rc::new(v),
+      Rc::new(vec![
+        Value::Array(vec![Value::Int(1)]),
+        Value::Array(vec![Value::Int(1)]),
+      ]),
+    );
 
     // They should both have the same value and index but from different origins
     let l = s.next().unwrap().step_into().unwrap().next().unwrap();
-    let r = s.next().unwrap().next().unwrap().step_into().unwrap().next().unwrap();
+    let r = s
+      .next()
+      .unwrap()
+      .next()
+      .unwrap()
+      .step_into()
+      .unwrap()
+      .next()
+      .unwrap();
 
     assert_ne!(l, r);
     assert_ne!(l, s);

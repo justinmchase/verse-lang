@@ -1,17 +1,11 @@
-use crate::ast::{
-  Expression,
-  Pattern,
-};
-use crate::runtime::{
-  Scope,
-  Match,
-  RuntimeError,
-  NativeFunctionHandler,
-  transform,
-  exec,
-};
+use crate::ast::{Expression, Pattern};
+use crate::runtime::{exec, transform, Match, RuntimeError, Scope};
 
-pub fn project(start: Scope, pattern: &Pattern, expression: &Option<Expression>) -> Result<Match, RuntimeError> {
+pub fn project(
+  start: Scope,
+  pattern: &Pattern,
+  expression: &Option<Expression>,
+) -> Result<Match, RuntimeError> {
   let verse = start.verse.clone();
   let ctx = start.context.clone();
   match transform(start.clone(), pattern) {
@@ -19,43 +13,22 @@ pub fn project(start: Scope, pattern: &Pattern, expression: &Option<Expression>)
       true => match expression {
         Some(e) => match exec(verse, ctx, e) {
           Ok(v) => Ok(Match::ok(v, start, m.end)),
-          Err(e) => Err(e)
+          Err(e) => Err(e),
         },
-        None => Ok(m)
+        None => Ok(m),
       },
-      false => Ok(m)
+      false => Ok(m),
     },
-    Err(e) => Err(e)
-  }
-}
-pub fn project_native(start: Scope, pattern: &Pattern, handler: &NativeFunctionHandler) -> Result<Match, RuntimeError> {
-  let ctx = start.context.clone();
-  match transform(start.clone(), pattern) {
-    Ok(m) => match m.matched {
-      true => match handler(ctx) {
-        Ok(v) => Ok(Match::ok(v, start, m.end)),
-        Err(e) => Err(e)
-      },
-      false => Ok(m)
-    },
-    Err(e) => Err(e)
+    Err(e) => Err(e),
   }
 }
 
 #[cfg(test)]
 mod tests {
   use super::project;
+  use crate::ast::{Expression, Pattern};
+  use crate::runtime::{Scope, Value, Verse};
   use std::rc::Rc;
-  use crate::ast::{
-    Expression,
-    Pattern,
-  };
-  use crate::runtime::{
-    Value,
-    Verse,
-    Scope,
-  };
-  
   #[test]
   fn project_success() {
     let v = Verse::default();

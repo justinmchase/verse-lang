@@ -1,11 +1,5 @@
-use crate::runtime::{
-  Library,
-  RuntimeError
-};
-
 pub use sys::sys;
-mod sys;
+pub use text::text;
 
-pub fn global() -> Result<Vec<Library>, RuntimeError> {
-  Ok(vec![ sys()? ])
-}
+mod sys;
+mod text;

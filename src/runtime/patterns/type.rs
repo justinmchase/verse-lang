@@ -1,4 +1,6 @@
+use crate::ast::Pattern;
 use crate::runtime::{Match, RuntimeError, Scope, Type, Value};
+use std::rc::Rc;
 
 pub fn r#type(start: Scope, t: &Type) -> Result<Match, RuntimeError> {
   let n = start.next();
@@ -26,13 +28,8 @@ pub fn r#type(start: Scope, t: &Type) -> Result<Match, RuntimeError> {
             return Ok(Match::ok(value.clone(), start, end));
           }
         }
-        Value::Function(_f, _v) => {
-          if t == &Type::Function {
-            return Ok(Match::ok(value.clone(), start, end));
-          }
-        }
-        Value::NativeFunction(_f, _v) => {
-          if t == &Type::Function {
+        Value::Pattern(_p, _c) => {
+          if t == &Type::Pattern {
             return Ok(Match::ok(value.clone(), start, end));
           }
         }
@@ -53,7 +50,8 @@ pub fn r#type(start: Scope, t: &Type) -> Result<Match, RuntimeError> {
 mod tests {
   use super::r#type;
   use super::Type;
-  use crate::runtime::{Function, Scope, Value, Verse};
+  use crate::ast::Pattern;
+  use crate::runtime::{Context, Scope, Value, Verse};
   use std::rc::Rc;
 
   #[test]
@@ -65,8 +63,8 @@ mod tests {
       (Value::String("".to_string()), Type::String),
       (Value::Array(vec![]), Type::Array),
       (
-        Value::Function(Box::new(Function::default()), v.create_context()),
-        Type::Function,
+        Value::Pattern(Box::new(Pattern::Default), Rc::new(Context::default())),
+        Type::Pattern,
       ),
     ];
 
@@ -77,13 +75,13 @@ mod tests {
       let m1 = r#type(s.clone(), &Type::Int).unwrap();
       let m2 = r#type(s.clone(), &Type::String).unwrap();
       let m3 = r#type(s.clone(), &Type::Array).unwrap();
-      let m4 = r#type(s.clone(), &Type::Function).unwrap();
+      let m4 = r#type(s.clone(), &Type::Pattern).unwrap();
 
       assert_eq!(m0.matched, *t == Type::None);
       assert_eq!(m1.matched, *t == Type::Int);
       assert_eq!(m2.matched, *t == Type::String);
       assert_eq!(m3.matched, *t == Type::Array);
-      assert_eq!(m4.matched, *t == Type::Function);
+      assert_eq!(m4.matched, *t == Type::Pattern);
 
       assert_eq!(m0.value, Value::None);
       assert_eq!(
@@ -112,7 +110,7 @@ mod tests {
       );
       assert_eq!(
         m4.value,
-        if *t == Type::Function {
+        if *t == Type::Pattern {
           v.clone()
         } else {
           Value::None

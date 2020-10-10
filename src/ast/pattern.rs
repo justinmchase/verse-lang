@@ -1,9 +1,5 @@
+use super::super::runtime::{NativePatternHandler, Type, Value};
 use super::expression::Expression;
-use super::super::runtime::{
-  Value,
-  Type,
-  NativeFunctionHandler,
-};
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub enum Pattern {
@@ -17,7 +13,6 @@ pub enum Pattern {
 
   // Quantifiers
   Quantity(Box<Pattern>, Option<usize>, Option<usize>),
-  
   // Logical
   And(Vec<Box<Pattern>>),
   Or(Vec<Box<Pattern>>),
@@ -27,5 +22,5 @@ pub enum Pattern {
   Ref(String),
   Var(String, Box<Pattern>),
   Project(Box<Pattern>, Box<Option<Expression>>),
-  ProjectNative(Box<Pattern>, NativeFunctionHandler),
+  Native(NativePatternHandler),
 }

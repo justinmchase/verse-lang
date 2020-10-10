@@ -4,6 +4,6 @@ pub enum Type {
   Int,
   String,
   Array,
-  Function,
-  Object
+  Object,
+  Pattern,
 }

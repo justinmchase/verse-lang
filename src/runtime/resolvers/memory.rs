@@ -3,6 +3,8 @@ use semver::Version;
 use std::collections::HashMap;
 use std::rc::Rc;
 
+use crate::runtime::modules::text;
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct MemoryResolver {
   libraries: HashMap<(Name, Version), Rc<Library>>,
@@ -17,6 +19,12 @@ impl MemoryResolver {
       libraries.insert((name.clone(), version.clone()), lib);
     }
     MemoryResolver { libraries }
+  }
+
+  pub fn core() -> Result<Self, RuntimeError> {
+    let mut libraries = HashMap::new();
+    libraries = text(libraries)?;
+    Ok(MemoryResolver { libraries })
   }
 }
 

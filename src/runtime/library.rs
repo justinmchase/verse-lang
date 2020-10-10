@@ -1,6 +1,6 @@
 extern crate regex;
 use crate::ast::{Expression, Pattern};
-use crate::runtime::{exec, Context, Function, Name, Namespace, RuntimeError, Value, Verse};
+use crate::runtime::{exec, Context, Name, Namespace, RuntimeError, Value, Verse};
 use semver::Version;
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -56,15 +56,15 @@ impl Library {
         None => Err(RuntimeError::InvalidNamespaceError(Namespace::from("main"))),
       },
     };
+    println!("  module: {:?}", expression);
     match expression {
       Ok(exp) => match exec(verse, context.clone(), &exp) {
         Ok(res) => match res.clone() {
-          Value::Function(_f, _ctx) => Ok(res),
-          Value::NativeFunction(_f, _ctx) => Ok(res),
-          _ => Ok(Value::Function(
-            Box::new(Function::new(
-              &Pattern::Default,
-              &Some(Expression::Value(res)),
+          Value::Pattern(_, _) => Ok(res),
+          _ => Ok(Value::Pattern(
+            Box::new(Pattern::Project(
+              Box::new(Pattern::Default),
+              Box::new(Some(Expression::Value(res))),
             )),
             context.clone(),
           )),
@@ -73,6 +73,10 @@ impl Library {
       },
       Err(e) => Err(e),
     }
+  }
+
+  pub fn add_main(&self, module: Expression) -> Result<&Self, RuntimeError> {
+    self.add_module(&Namespace::parse("main"), module)
   }
 
   pub fn add_module(

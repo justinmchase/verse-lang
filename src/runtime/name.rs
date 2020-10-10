@@ -1,6 +1,5 @@
-extern crate regex;
-use std::hash::Hash;
 use regex::Regex;
+use std::hash::Hash;
 
 #[derive(Debug, PartialEq, Eq, Clone, Hash)]
 pub struct Name(String);
@@ -30,7 +29,6 @@ impl From<&Name> for String {
 #[cfg(test)]
 mod tests {
   use super::Name;
-  
   #[test]
   fn can_make_valid_name() {
     Name::parse("test");

@@ -1,13 +1,9 @@
-use std::fmt;
-use std::rc::Rc;
+use crate::ast::Pattern;
+use crate::runtime::{Context, Id};
 use std::collections::HashMap;
-use std::hash::{ Hash, Hasher };
-use crate::runtime::{
-  Function,
-  NativeFunction,
-  Context,
-  Id,
-};
+use std::fmt;
+use std::hash::{Hash, Hasher};
+use std::rc::Rc;
 
 #[derive(PartialEq, Eq, Clone)]
 pub enum Value {
@@ -15,9 +11,8 @@ pub enum Value {
   Int(i32),
   String(String),
   Array(Vec<Value>),
-  Function(Box<Function>, Rc<Context>),
-  NativeFunction(Box<NativeFunction>, Rc<Context>),
-  Object(Id, Rc<HashMap<String, Value>>)
+  Object(Id, Rc<HashMap<String, Value>>),
+  Pattern(Box<Pattern>, Rc<Context>),
 }
 
 impl Hash for Value {
@@ -27,14 +22,8 @@ impl Hash for Value {
       Value::Int(i) => i.hash(state),
       Value::String(s) => s.hash(state),
       Value::Array(v) => v.hash(state),
-      Value::Function(f, _) => {
-        // omit context to prevent recursion
-        &f.hash(state);
-      },
-      Value::NativeFunction(f, _) => {
-        &f.hash(state);
-      }
-      Value::Object(id, _) => id.hash(state)
+      Value::Object(id, _) => id.hash(state),
+      Value::Pattern(p, _) => p.hash(state),
     }
   }
 }
@@ -46,9 +35,8 @@ impl fmt::Debug for Value {
       Value::Int(i) => write!(f, "Int({:?})", i),
       Value::String(s) => write!(f, "String({:?})", s),
       Value::Array(v) => write!(f, "Array({:?})", v),
-      Value::Function(func, _) => write!(f, "Function({:?})", func),
-      Value::NativeFunction(func, _) => write!(f, "NativeFunction({:?})", func),
       Value::Object(id, o) => write!(f, "Object({:?}, {:?})", id, o),
+      Value::Pattern(p, _) => write!(f, "Pattern({:?})", p),
     }
   }
 }
@@ -60,53 +48,70 @@ impl fmt::Display for Value {
       Value::Int(i) => write!(f, "Int({})", i),
       Value::String(s) => write!(f, "String({})", s),
       Value::Array(v) => write!(f, "Array({:?})", v),
-      Value::Function(func, _) => write!(f, "Function({:?})", func),
-      Value::NativeFunction(func, _) => write!(f, "NativeFunction({:?})", func),
       Value::Object(_id, o) => write!(f, "Object({:?})", o),
+      Value::Pattern(p, _) => write!(f, "Pattern({:?})", p),
     }
   }
 }
 
 pub fn value_cmp(left: &Value, right: &Value) -> Option<i8> {
-  if left == right { return Some(0); }
+  if left == right {
+    return Some(0);
+  }
   match left {
     Value::None => match right {
       Value::None => Some(0),
-      _ => None
+      _ => None,
     },
     Value::Int(l) => match right {
       Value::Int(r) => {
-        if l == r { return Some(0) }
-        if l >  r { return Some(1) }
-        if l <  r { return Some(-1) }
-        return None
-      },
-      _ => None
+        if l == r {
+          return Some(0);
+        }
+        if l > r {
+          return Some(1);
+        }
+        if l < r {
+          return Some(-1);
+        }
+        return None;
+      }
+      _ => None,
     },
     Value::String(l) => match right {
       Value::String(r) => {
-        if l == r { return Some(0) }
-        if l >  r { return Some(1) }
-        if l <  r { return Some(-1) }
-        return None
-      },
-      _ => None
+        if l == r {
+          return Some(0);
+        }
+        if l > r {
+          return Some(1);
+        }
+        if l < r {
+          return Some(-1);
+        }
+        return None;
+      }
+      _ => None,
     },
     Value::Array(l) => match right {
       Value::Array(r) => {
-        if l == r { return Some(0) }
-        return None
-      },
-      _ => None
+        if l == r {
+          return Some(0);
+        }
+        return None;
+      }
+      _ => None,
     },
-    // Value::Function(l) => match right {
-    //   Value::Function(r) => {
-    //     if l == r { return Some(0) }
-    //     return None
-    //   },
-    //   _ => None
-    // },
-    _ => None
+    Value::Pattern(l, _) => match right {
+      Value::Pattern(r, _) => {
+        if l.eq(&r) {
+          return Some(0);
+        }
+        return None;
+      }
+      _ => None,
+    },
+    _ => None,
   }
 }
 
@@ -114,8 +119,8 @@ pub fn value_eq(left: &Value, right: &Value) -> bool {
   match value_cmp(left, right) {
     Some(v) => match v {
       0 => true,
-      _ => false
-    }
+      _ => false,
+    },
     _ => false,
   }
 }
@@ -164,10 +169,7 @@ pub fn value_eq(left: &Value, right: &Value) -> bool {
 
 #[cfg(test)]
 mod tests {
-  use super::{
-    value_cmp,
-    Value
-  };
+  use super::{value_cmp, Value};
 
   #[test]
   fn value_comparisons() {
@@ -176,19 +178,28 @@ mod tests {
       (Value::None, Value::Int(0), None),
       (Value::None, Value::String("".to_string()), None),
       (Value::None, Value::Array(vec![]), None),
-      
       (Value::Int(0), Value::Int(0), Some(0)),
       (Value::Int(1), Value::Int(0), Some(1)),
       (Value::Int(0), Value::Int(1), Some(-1)),
       (Value::Int(0), Value::String("".to_string()), None),
       (Value::Int(0), Value::Array(vec![]), None),
-      
-      (Value::String("".to_string()), Value::String("".to_string()), Some(0)),
-      (Value::String(String::from("z").to_string()), Value::String("a".to_string()), Some(1)),
-      (Value::String("a".to_string()), Value::String(String::from("z").to_string()), Some(-1)),
+      (
+        Value::String("".to_string()),
+        Value::String("".to_string()),
+        Some(0),
+      ),
+      (
+        Value::String(String::from("z").to_string()),
+        Value::String("a".to_string()),
+        Some(1),
+      ),
+      (
+        Value::String("a".to_string()),
+        Value::String(String::from("z").to_string()),
+        Some(-1),
+      ),
       (Value::String("".to_string()), Value::Array(vec![]), None),
     ];
-    
     for (v0, v1, expected) in cases.iter() {
       let res = value_cmp(&v0, &v1);
       assert_eq!(&res, expected);
