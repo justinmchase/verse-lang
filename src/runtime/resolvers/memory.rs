@@ -3,7 +3,7 @@ use semver::Version;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use crate::runtime::modules::text;
+use crate::runtime::modules::unicode;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct MemoryResolver {
@@ -23,7 +23,7 @@ impl MemoryResolver {
 
   pub fn core() -> Result<Self, RuntimeError> {
     let mut libraries = HashMap::new();
-    libraries = text(libraries)?;
+    libraries = unicode(libraries)?;
     Ok(MemoryResolver { libraries })
   }
 }

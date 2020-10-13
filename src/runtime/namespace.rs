@@ -1,6 +1,6 @@
 extern crate regex;
-use std::hash::Hash;
 use regex::Regex;
+use std::hash::Hash;
 
 #[derive(Debug, PartialEq, Eq, Clone, Hash)]
 pub struct Namespace(String);
@@ -8,9 +8,13 @@ pub struct Namespace(String);
 impl Namespace {
   pub fn parse(namespace: &str) -> Self {
     lazy_static! {
-      static ref NAMESPACE_SCHEMA: Regex = Regex::new(r"^(\w(\w|[0-9])+)(\.\w(\w|[0-9])+)*$").unwrap();
+      static ref NAMESPACE_SCHEMA: Regex =
+        Regex::new(r"^(\w(\w|[0-9])+)(\.\w(\w|[0-9])+)*$").unwrap();
     }
-    assert!(NAMESPACE_SCHEMA.is_match(namespace));
+    assert!(
+      NAMESPACE_SCHEMA.is_match(namespace),
+      format!("Invalid namespace {:?}", namespace)
+    );
     Namespace(namespace.into())
   }
 }
@@ -26,7 +30,6 @@ impl From<&Namespace> for String {
     namespace.0.clone()
   }
 }
-
 
 #[cfg(test)]
 mod tests {

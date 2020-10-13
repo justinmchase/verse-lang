@@ -1,5 +1,5 @@
 pub use sys::sys;
-pub use text::text;
+pub use unicode::unicode;
 
 mod sys;
-mod text;
+mod unicode;
